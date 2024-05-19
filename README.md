@@ -5,8 +5,8 @@
 1. Install libraries
 
 ```sh
-pip install flask # To create server
-pip install pyjwt # To use JWI
+pip install flask # Create web server
+pip install pyjwt # Use JWT
 
 ```
 

@@ -3,6 +3,24 @@ import jwt
 
 app = Flask(__name__)
 
+USERS = [
+  {
+    'username': 'branko',
+    'password': 'branko',
+    'role': 'manager'
+  },
+  {
+    'username': 'mavend',
+    'password': 'mavend',
+    'role': 'client'
+  },
+  {
+    'username': 'willy',
+    'password': 'willy',
+    'role': 'admin'
+  }
+]
+
 @app.route('/auth', methods=['POST'])
 def auth_user():
 
@@ -10,16 +28,18 @@ def auth_user():
   username = request.json['username']
   password = request.json['password']
 
-  # Check if the username and password are not empty
-  if username and password:
-    if valid_user(username, password):
-      token = jwt.encode({'username': username}, 'secret', algorithm='HS256')
-      return jsonify({'message': 'success', 'token': token})
+  user = validate_user(username, password)
+  if user: 
+    token = jwt.encode({'role': user['role']}, 'secret', algorithm='HS256')
+    return jsonify({'message': 'success', 'token': token})
   else:
-    return jsonify({'message': 'Username and password are required'})
+    return jsonify({'message': 'Invalid username or password'})
 
-def valid_user(username, password):
-  return True
+def validate_user(username, password):
+  for user in USERS:
+    if user['username'] == username and user['password'] == password:
+      return user
+  return None
 
 if __name__=='__main__':
   app.run()
