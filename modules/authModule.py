@@ -19,18 +19,9 @@ def db_connection():
 
 db = db_connection()
 
-USERS = [
-    {"id": 1, "username": "branko", "password": "branko", "role": "manager"},
-    {"id": 2, "username": "willy", "password": "willy", "role": "admin"},
-    {"id": 3, "username": "mavend", "password": "mavend", "role": "client"},
-]
-
 
 @authModule.route("/auth", methods=["POST"])
 def auth_user():
-    # Get the username and password from JSON request
-    # username = request.json["username"]
-    # password = request.json["password"]
 
     if not db:
         return jsonify({"message": "Database connection error"}), 500
