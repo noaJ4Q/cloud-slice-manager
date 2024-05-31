@@ -1,4 +1,3 @@
-import bcrypt
 import jwt
 
 # from entities.user import User
