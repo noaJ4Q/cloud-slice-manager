@@ -1,6 +1,7 @@
 import bcrypt
 import jwt
-from entities.user import User
+
+# from entities.user import User
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 
@@ -36,15 +37,23 @@ def auth_user():
         return jsonify({"message": "Database connection error"}), 500
 
     data = request.get_json()
+    if not data or not "username" in data or not "password" in data:
+        return jsonify({"message": "Missing username or password"}), 400
 
-    user = validate_user(data)
+    username = data["username"]
+    password = data["password"]
+
+    user = validate_user(username, password)
+
     if user:
         token = jwt.encode({"role": user["role"]}, "secret", algorithm="HS256")
-        return jsonify({"message": "success", "token": token})
+        return jsonify({"message": "success", "token": token}), 200
     else:
-        return jsonify({"message": "Invalid username or password"})
+        return jsonify({"message": "Invalid username or password"}), 401
 
 
-def validate_user(data):
-    user = db.users.find_one(data)
-    return user is not None
+def validate_user(username, password):
+    user = db.users.find_one({"username": username, "password": password})
+    if user:
+        return user
+    return None
