@@ -36,7 +36,9 @@ def auth_user():
     user = validate_user(username, password)
 
     if user:
-        token = jwt.encode({"role": user["role"]}, "secret", algorithm="HS256")
+        token = jwt.encode(
+            {"_id": user["_id"], "role": user["role"]}, "secret", algorithm="HS256"
+        )
         return jsonify({"message": "success", "token": token}), 200
     else:
         return jsonify({"message": "Invalid username or password"}), 401
