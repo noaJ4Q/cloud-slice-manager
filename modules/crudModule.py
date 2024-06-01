@@ -70,7 +70,13 @@ def gen_diag():
 
         url = generate_diag(decoded["_id"], data)
 
-        return jsonify({"message": "success", "url": url})
+        return jsonify(
+            {
+                "message": "success",
+                "url": url,
+                "tip": "We recommend to open url in private mode to avoid loading cache.",
+            }
+        )
     except jwt.ExpiredSignatureError:
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
