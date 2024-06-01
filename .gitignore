@@ -9,3 +9,5 @@ htmlcov/
 .tox/
 docs/_build/
 log_main.txt
+lib/
+topology_graph/
