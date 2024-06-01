@@ -37,7 +37,7 @@ def auth_user():
 
     if user:
         token = jwt.encode(
-            {"_id": user["_id"], "role": user["role"]}, "secret", algorithm="HS256"
+            {"_id": str(user["_id"]), "role": user["role"]}, "secret", algorithm="HS256"
         )
         return jsonify({"message": "success", "token": token}), 200
     else:
