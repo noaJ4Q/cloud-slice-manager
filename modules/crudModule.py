@@ -111,6 +111,8 @@ def generate_diag(userId, json_data):
                     label=edge_info.get("label", ""),
                     color=edge_info.get("color", ""),
                 )
+    net.repulsion(node_distance=100, spring_length=100)
+
     html_file = f"topology_graph/{userId}.html"
     net.show(html_file)
 
