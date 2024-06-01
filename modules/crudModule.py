@@ -97,7 +97,13 @@ def generate_diag(userId, json_data):
     edge_node_mapping = json_data.get("metadata", {}).get("edge_node_mapping", {})
 
     for node_id, node_info in nodes.items():
-        net.add_node(node_id, label=node_info["label"], shape="circle")
+        image_path = "http://localhost:8080/images/{}.png".format(node_info["figure"])
+        net.add_node(
+            node_id,
+            label=node_info["label"],
+            shape="circularImage",
+            image=image_path,
+        )
 
     for from_node, edge_ids in edge_node_mapping.items():
         for edge_id in edge_ids:
@@ -124,3 +130,8 @@ def generate_diag(userId, json_data):
     net.show(html_file)
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
+
+
+@crudModule.route("/images/<path:filename>")
+def serve_images(filename):
+    return send_from_directory("graph_resources", filename)
