@@ -91,7 +91,7 @@ def generate_diag(userId, json_data):
     edge_node_mapping = json_data.get("metadata", {}).get("edge_node_mapping", {})
 
     for node_id, node_info in nodes.items():
-        net.add_node(node_id, label=node_info["label"], shape=node_info["figure"])
+        net.add_node(node_id, label=node_info["label"], shape="circle")
 
     for from_node, edge_ids in edge_node_mapping.items():
         for edge_id in edge_ids:
@@ -112,7 +112,7 @@ def generate_diag(userId, json_data):
                     color=edge_info.get("color", ""),
                 )
 
-    net.show_buttons(filter_="physics")
+    net.repulsion(node_distance=1000, spring_strength=0)
 
     html_file = f"topology_graph/{userId}.html"
     net.show(html_file)
