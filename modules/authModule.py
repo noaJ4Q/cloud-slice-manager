@@ -1,3 +1,5 @@
+import hashlib
+
 import jwt
 
 # from entities.user import User
@@ -31,7 +33,7 @@ def auth_user():
         return jsonify({"message": "Missing username or password"}), 400
 
     username = data["username"]
-    password = data["password"]
+    password = hashlib.sha256(data["password"].encode("utf-8")).hexdigest()
 
     user = validate_user(username, password)
 
