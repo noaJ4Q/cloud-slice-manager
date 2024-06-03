@@ -85,7 +85,7 @@ def gen_diag():
 
 @crudModule.route("/slices/topology_graph/<path:filename>")
 def serve_graph(filename):
-    return send_from_directory("topology_graph", filename)
+    return send_from_directory("topologygraph", filename)
 
 
 def generate_diag(userId, json_data):
