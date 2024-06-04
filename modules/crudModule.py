@@ -83,9 +83,9 @@ def gen_diag():
         return jsonify({"message": "Invalid token"}), 401
 
 
-@crudModule.route("/slices/topology_graph/<path:filename>")
+@crudModule.route("/slices/topologyGraph/<path:filename>")
 def serve_graph(filename):
-    return send_from_directory("topologygraph", filename)
+    return send_from_directory("topologyGraph", filename)
 
 
 def generate_diag(userId, json_data):
@@ -120,7 +120,7 @@ def generate_diag(userId, json_data):
 
     net.repulsion(node_distance=200)
 
-    html_file = f"topologygraph/{userId}.html"
+    html_file = f"topologyGraph/{userId}.html"
     net.show(html_file)
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
