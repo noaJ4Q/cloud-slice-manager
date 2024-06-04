@@ -10,4 +10,4 @@ htmlcov/
 docs/_build/
 log_main.txt
 lib/
-topology_graph/
+topologyGraph/
