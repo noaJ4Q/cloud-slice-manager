@@ -120,7 +120,7 @@ def generate_diag(userId, json_data):
 
     net.repulsion(node_distance=200)
 
-    html_file = f"topology_graph/{userId}.html"
+    html_file = f"topologygraph/{userId}.html"
     net.show(html_file)
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
