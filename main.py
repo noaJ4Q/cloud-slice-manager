@@ -1,4 +1,5 @@
 from flask import Flask
+
 from modules.authModule import authModule
 from modules.crudModule import crudModule
 
