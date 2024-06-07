@@ -1,8 +1,9 @@
 import jwt
 import requests
 from flask import Blueprint, jsonify, request, send_from_directory
-from openStack.openStackModule import main as openStackModule
 from pyvis.network import Network
+
+from .openStack.openStackModule import main as openStackModule
 
 crudModule = Blueprint("crudModule", __name__)
 
