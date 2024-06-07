@@ -1,8 +1,9 @@
 import json
 
-from instances_creation import main as instances_creation
 from openstack_sdk import create_subnet
-from ports_creation import main as ports_creation
+
+from .instances_creation import main as instances_creation
+from .ports_creation import main as ports_creation
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"

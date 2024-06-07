@@ -1,5 +1,6 @@
-from network_creation import main as network_creation
 from openstack_sdk import token_authentication_with_scoped_authorization
+
+from .network_creation import main as network_creation
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
