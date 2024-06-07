@@ -1,5 +1,7 @@
 import jwt
+import requests
 from flask import Blueprint, jsonify, request, send_from_directory
+from openStack.openStackModule import main as openStackModule
 from pyvis.network import Network
 
 crudModule = Blueprint("crudModule", __name__)
@@ -49,8 +51,16 @@ def create_slice():
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if decoded["role"] == "manager":
-            slice = request.json["slice"]
-            return jsonify({"message": "success", "slice": slice})
+            data = request.get_json()
+            if not data:
+                return jsonify({"message": "Missing JSON from topology"}), 400
+
+            if request.json["deployment"]["platform"] == "OpenStack":
+                openStackModule(data)
+            else:
+                # procedimiento linux
+                slice = request.json["slice"]
+                return jsonify({"message": "success", "slice": slice})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
