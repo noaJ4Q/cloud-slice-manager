@@ -1,5 +1,11 @@
+import logging
+from io import StringIO
+
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import password_authentication_with_scoped_authorization
+
+log_stream = StringIO()
+logging.basicConfig(level=logging.INFO, stream=log_stream)
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
@@ -21,10 +27,11 @@ def main(json_data):
         DOMAIN_ID,
         ADMIN_PROJECT_NAME,
     )
+    log_contents = log_stream.getvalue()
     if resp1.status_code == 201:
         print("SUCCESSFUL ADMIN AUTHENTICATION")
         admin_token = resp1.headers["X-Subject-Token"]
         admin_token_for_project(admin_token=admin_token, json_data=json_data)
     else:
         print("FAILED ADMIN AUTHENTICATION")
-        return
+    return log_contents
