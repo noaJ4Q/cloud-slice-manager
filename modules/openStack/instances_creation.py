@@ -2,7 +2,7 @@ import io
 import json
 import logging
 
-from .openstack_sdk import create_instance
+from .openstack_sdk import create_instance, log_error, log_info
 
 log_buffer = io.StringIO()
 buffer_handler = logging.StreamHandler(log_buffer)
@@ -18,7 +18,7 @@ DOMAIN_ID = "default"
 
 def main(token_for_project, node_id, ports, json_data):
 
-    logger.info("Creando instancias")
+    log_info(logger, "Creando instancias")
 
     # INSTANCE DATA
     instance_1_name = json_data["visjs"]["nodes"][node_id]["label"]
@@ -44,13 +44,10 @@ def main(token_for_project, node_id, ports, json_data):
     )
     print(resp.status_code)
     if resp.status_code == 202:
-        print("INSTANCE CREATED SUCCESSFULLY")
-        logger.info("INSTANCE CREATED SUCCESSFULLY")
+        log_info(logger, "INSTANCE CREATED SUCCESSFULLY")
         instance_created = resp.json()
         print(json.dumps(instance_created))
-        logger.info(json.dumps(instance_created))
     else:
-        print("FAILED INSTANCE CREATION")
-        logger.error("FAILED INSTANCE CREATION")
+        log_error(logger, "FAILED INSTANCE CREATION")
     logs_contents = log_buffer.getvalue()
     return logs_contents

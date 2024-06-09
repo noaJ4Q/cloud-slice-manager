@@ -2,7 +2,11 @@ import io
 import logging
 
 from .admin_token_for_project import main as admin_token_for_project
-from .openstack_sdk import password_authentication_with_scoped_authorization
+from .openstack_sdk import (
+    log_error,
+    log_info,
+    password_authentication_with_scoped_authorization,
+)
 
 log_buffer = io.StringIO()
 buffer_handler = logging.StreamHandler(log_buffer)
@@ -21,7 +25,7 @@ ADMIN_PROJECT_NAME = "admin"
 
 
 def main(json_data):
-    logging.info("Inicio de la operación de OpenStack")
+    log_info(logger, "Inicio de la operación de OpenStack")
     # ===================================================== TOKEN FOR ADMIN USER =====================================================
     resp1 = password_authentication_with_scoped_authorization(
         KEYSTONE_ENDPOINT,
@@ -32,13 +36,11 @@ def main(json_data):
         ADMIN_PROJECT_NAME,
     )
     if resp1.status_code == 201:
-        print("SUCCESSFUL ADMIN AUTHENTICATION")
-        logger.info("SUCCESSFUL ADMIN AUTHENTICATION")
+        log_info(logger, "SUCCESSFUL ADMIN AUTHENTICATION")
         admin_token = resp1.headers["X-Subject-Token"]
         logs = admin_token_for_project(admin_token=admin_token, json_data=json_data)
-        logger.info(logs)
+        log_info(logger, logs)
     else:
-        logger.error("FAILED ADMIN AUTHENTICATION")
-        print("FAILED ADMIN AUTHENTICATION")
+        log_error(logger, "FAILED ADMIN AUTHENTICATION")
     log_contents = log_buffer.getvalue()
     return log_contents
