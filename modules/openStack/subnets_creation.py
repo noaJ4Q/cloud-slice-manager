@@ -47,7 +47,7 @@ def main(token_for_project, network_id, json_data):
                 edge_id=edge_id,
             )
             log_info(logger, logs)
-        for node_id in json_data["metadata"]["nodes"].items():
+        for node_id, node_info in json_data["metadata"]["nodes"].items():
             logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
