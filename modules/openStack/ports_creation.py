@@ -22,6 +22,8 @@ def main(token_for_project, network_id, project_id, port_name, edge_id, ports):
     if resp1.status_code == 201:
         log_info(logger, "PORT CREATED SUCCESSFULLY")
         port_created = resp1.json()
+        if edge_id not in ports:
+            ports[edge_id] = []
         ports[edge_id].append(port_created["port"]["id"])
     else:
         logger.error("FAILED PORT CREATION")
