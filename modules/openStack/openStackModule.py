@@ -1,6 +1,5 @@
-from openstack_sdk import password_authentication_with_scoped_authorization
-
 from .admin_token_for_project import main as admin_token_for_project
+from .openstack_sdk import password_authentication_with_scoped_authorization
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
