@@ -1,10 +1,13 @@
+import io
 import logging
-from io import StringIO
 
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import password_authentication_with_scoped_authorization
 
-logger = logging.getLogger("openStackModule")
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
+logger = logging.getLogger()
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -37,5 +40,5 @@ def main(json_data):
     else:
         logger.error("FAILED ADMIN AUTHENTICATION")
         print("FAILED ADMIN AUTHENTICATION")
-    log_contents = logger.getvalue()
+    log_contents = log_buffer.getvalue()
     return log_contents
