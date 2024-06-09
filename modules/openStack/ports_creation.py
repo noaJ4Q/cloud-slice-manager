@@ -1,6 +1,6 @@
 import json
 
-from openstack_sdk import create_port
+from .openstack_sdk import create_port
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"

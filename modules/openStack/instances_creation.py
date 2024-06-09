@@ -1,6 +1,6 @@
 import json
 
-from openstack_sdk import create_instance
+from .openstack_sdk import create_instance
 
 # ENDPOINTS
 NOVA_ENDPOINT = "http://127.0.0.1:8774/v2.1"

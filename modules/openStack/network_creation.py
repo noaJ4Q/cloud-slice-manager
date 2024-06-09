@@ -1,7 +1,6 @@
 import json
 
-from openstack_sdk import create_network
-
+from .openstack_sdk import create_network
 from .subnets_creation import main as subnets_creation
 
 # ENDPOINTS

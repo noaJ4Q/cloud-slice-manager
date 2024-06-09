@@ -1,8 +1,7 @@
 import json
 
-from openstack_sdk import create_subnet
-
 from .instances_creation import main as instances_creation
+from .openstack_sdk import create_subnet
 from .ports_creation import main as ports_creation
 
 # ENDPOINTS
