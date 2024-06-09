@@ -8,8 +8,20 @@ from .openstack_sdk import (
     password_authentication_with_scoped_authorization,
 )
 
+
+class FilterDebugMessages(logging.Filter):
+    def filter(self, record):
+        # Filtra mensajes que no quieres que aparezcan en el output
+        if "Debugger is active!" in record.getMessage():
+            return False
+        if "Debugger PIN:" in record.getMessage():
+            return False
+        return True
+
+
 log_buffer = io.StringIO()
 buffer_handler = logging.StreamHandler(log_buffer)
+buffer_handler.addFilter(FilterDebugMessages())
 logger = logging.getLogger()
 logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
