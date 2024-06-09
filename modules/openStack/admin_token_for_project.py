@@ -1,9 +1,13 @@
+import io
 import logging
 
 from .network_creation import main as network_creation
 from .openstack_sdk import token_authentication_with_scoped_authorization
 
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
 logger = logging.getLogger("admin_token_for_project")
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -30,5 +34,5 @@ def main(admin_token, json_data):
     else:
         print("FAILED AUTHENTICATION FOR PROJECT " + project_name)
         logger.error("FAILED AUTHENTICATION FOR PROJECT %s", project_name)
-    log_contents = logger.getvalue()
+    log_contents = log_buffer.getvalue()
     return log_contents

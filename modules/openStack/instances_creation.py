@@ -1,9 +1,13 @@
+import io
 import json
 import logging
 
 from .openstack_sdk import create_instance
 
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
 logger = logging.getLogger("instances_creation")
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -48,5 +52,5 @@ def main(token_for_project, node_id, ports, json_data):
     else:
         print("FAILED INSTANCE CREATION")
         logger.error("FAILED INSTANCE CREATION")
-    logs_contents = logger.getvalue()
+    logs_contents = log_buffer.getvalue()
     return logs_contents

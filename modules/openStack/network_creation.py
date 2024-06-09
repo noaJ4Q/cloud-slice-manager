@@ -1,10 +1,14 @@
+import io
 import json
 import logging
 
 from .openstack_sdk import create_network
 from .subnets_creation import main as subnets_creation
 
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
 logger = logging.getLogger("network_creation")
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -31,5 +35,5 @@ def main(token_for_project, json_data):
     else:
         print("FAILED NETWORK CREATION")
         logger.error("FAILED NETWORK CREATION")
-    log_contents = logger.getvalue()
+    log_contents = log_buffer.getvalue()
     return log_contents

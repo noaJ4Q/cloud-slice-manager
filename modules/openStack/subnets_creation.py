@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 
@@ -5,7 +6,10 @@ from .instances_creation import main as instances_creation
 from .openstack_sdk import create_subnet
 from .ports_creation import main as ports_creation
 
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
 logger = logging.getLogger("subnets_creation")
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -56,5 +60,5 @@ def main(token_for_project, network_id, json_data):
     else:
         print("FAILED SUBNET CREATION")
         logger.error("FAILED SUBNET CREATION")
-    log_contents = logger.getvalue()
+    log_contents = log_buffer.getvalue()
     return log_contents

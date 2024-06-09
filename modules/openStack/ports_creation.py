@@ -1,9 +1,13 @@
+import io
 import json
 import logging
 
 from .openstack_sdk import create_port
 
+log_buffer = io.StringIO()
+buffer_handler = logging.StreamHandler(log_buffer)
 logger = logging.getLogger("ports_creation")
+logger.addHandler(buffer_handler)
 logger.setLevel(logging.INFO)
 
 # ENDPOINTS
@@ -35,5 +39,5 @@ def main(token_for_project, network_id, project_id, port_name, edge_id, ports):
     else:
         print("FAILED PORT CREATION")
         logger.error("FAILED PORT CREATION")
-    log_contents = logger.getvalue()
+    log_contents = log_buffer.getvalue()
     return log_contents
