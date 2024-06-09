@@ -18,6 +18,7 @@ ADMIN_PROJECT_NAME = "admin"
 
 
 def main(json_data):
+    logging.info("Inicio de la operación de OpenStack")
     # ===================================================== TOKEN FOR ADMIN USER =====================================================
     resp1 = password_authentication_with_scoped_authorization(
         KEYSTONE_ENDPOINT,
@@ -27,11 +28,11 @@ def main(json_data):
         DOMAIN_ID,
         ADMIN_PROJECT_NAME,
     )
-    log_contents = log_stream.getvalue()
     if resp1.status_code == 201:
         print("SUCCESSFUL ADMIN AUTHENTICATION")
         admin_token = resp1.headers["X-Subject-Token"]
         admin_token_for_project(admin_token=admin_token, json_data=json_data)
     else:
         print("FAILED ADMIN AUTHENTICATION")
+    log_contents = log_stream.getvalue()
     return log_contents
