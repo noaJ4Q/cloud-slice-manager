@@ -4,8 +4,8 @@ from io import StringIO
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import password_authentication_with_scoped_authorization
 
-log_stream = StringIO()
-logging.basicConfig(level=logging.INFO, stream=log_stream)
+logger = logging.getLogger("openStackModule")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"

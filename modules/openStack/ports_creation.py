@@ -1,12 +1,17 @@
 import json
+import logging
 
 from .openstack_sdk import create_port
+
+logger = logging.getLogger("ports_creation")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"
 
 
 def main(token_for_project, network_id, project_id, port_name, edge_id, ports):
+    logger.info("Creando puertos")
     resp1 = create_port(
         NEUTRON_ENDPOINT, token_for_project, port_name, network_id, project_id
     )

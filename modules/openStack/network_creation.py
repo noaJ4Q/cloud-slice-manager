@@ -1,7 +1,11 @@
 import json
+import logging
 
 from .openstack_sdk import create_network
 from .subnets_creation import main as subnets_creation
+
+logger = logging.getLogger("network_creation")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"
@@ -10,6 +14,7 @@ DOMAIN_ID = "default"
 
 
 def main(token_for_project, json_data):
+    logger.info("Creando red")
     network_name = json_data["deployment"]["details"]["network_name"]
     resp3 = create_network(NEUTRON_ENDPOINT, token_for_project, network_name)
     if resp3.status_code == 201:

@@ -1,6 +1,10 @@
 import json
+import logging
 
 from .openstack_sdk import create_instance
+
+logger = logging.getLogger("instances_creation")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 NOVA_ENDPOINT = "http://127.0.0.1:8774/v2.1"
@@ -9,6 +13,8 @@ DOMAIN_ID = "default"
 
 
 def main(token_for_project, node_id, ports, json_data):
+
+    logger.info("Creando instancias")
 
     # INSTANCE DATA
     instance_1_name = json_data["visjs"]["nodes"][node_id]["label"]

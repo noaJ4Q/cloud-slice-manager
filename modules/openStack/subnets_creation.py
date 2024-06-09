@@ -1,8 +1,12 @@
 import json
+import logging
 
 from .instances_creation import main as instances_creation
 from .openstack_sdk import create_subnet
 from .ports_creation import main as ports_creation
+
+logger = logging.getLogger("subnets_creation")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"
@@ -12,6 +16,7 @@ DOMAIN_ID = "default"
 
 
 def main(token_for_project, network_id, json_data):
+    logger.info("Creando subred")
     details = json_data["deployment"]["details"]
     resp = create_subnet(
         NEUTRON_ENDPOINT,

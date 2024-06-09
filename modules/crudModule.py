@@ -1,9 +1,18 @@
+import logging
+
 import jwt
 import requests
 from flask import Blueprint, jsonify, request, send_from_directory
 from pyvis.network import Network
 
 from .openStack.openStackModule import main as openStackModule
+
+logger = logging.getLogger("crudModule")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 crudModule = Blueprint("crudModule", __name__)
 

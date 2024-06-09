@@ -1,11 +1,10 @@
 import logging
-from io import StringIO
 
 from .network_creation import main as network_creation
 from .openstack_sdk import token_authentication_with_scoped_authorization
 
-logging.basicConfig(level=logging.INFO)
-logging.info("info")
+logger = logging.getLogger("admin_token_for_project")
+logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
@@ -14,6 +13,7 @@ DOMAIN_ID = "default"
 
 
 def main(admin_token, json_data):
+    logger.info("Obteniendo token para el proyecto")
     project_name = json_data["deployment"]["details"]["project_name"]
     # ===================================================== TOKEN FOR PROJECT =====================================================
     resp = token_authentication_with_scoped_authorization(
