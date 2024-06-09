@@ -50,6 +50,24 @@ def password_authentication_with_scoped_authorization(
     return r
 
 
+def assign_role_to_user(auth_endpoint, token, project_id, user_id, role_id):
+    url = (
+        auth_endpoint
+        + "/projects/"
+        + project_id
+        + "/users/"
+        + user_id
+        + "/roles/"
+        + role_id
+    )
+
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.put(url=url, headers=headers)
+    # status_code success = 204
+    return r
+
+
 def token_authentication_with_scoped_authorization(
     auth_endpoint, token, project_domain_id, project_name
 ):
