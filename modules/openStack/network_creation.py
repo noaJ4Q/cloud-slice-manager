@@ -24,7 +24,7 @@ def main(token_for_project, json_data):
     if resp3.status_code == 201:
         log_info(logger, "NETWORK CREATED SUCCESSFULLY")
         network_created = resp3.json()
-        network_id = json.dumps(network_created)["network"]["id"]
+        network_id = network_created["network"]["id"]
         logs = subnets_creation(
             token_for_project=token_for_project,
             network_id=network_id,
