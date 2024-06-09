@@ -28,13 +28,14 @@ def main(token_for_project, network_id, json_data):
     )
     if resp.status_code == 201:
         print("SUBNET CREATED SUCCESSFULLY")
+        logger.info("SUBNET CREATED SUCCESSFULLY")
         subnet_created = resp.json()
 
         project_id = json.dumps(subnet_created)["subnet"]["project_id"]
 
         ports = {}
         for edge_id, edge_info in json_data["visjs"]["edges"].items():
-            ports_creation(
+            logs = ports_creation(
                 token_for_project=token_for_project,
                 network_id=network_id,
                 project_id=project_id,
@@ -42,14 +43,18 @@ def main(token_for_project, network_id, json_data):
                 ports=ports,
                 edge_id=edge_id,
             )
+            logger.info(logs)
         for node_id in json_data["metadata"]["nodes"].items():
-            instances_creation(
+            logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
                 ports=ports,
                 json_data=json_data,
             )
+            logger.info(logs1)
 
     else:
         print("FAILED SUBNET CREATION")
-        return
+        logger.error("FAILED SUBNET CREATION")
+    log_contents = logger.getvalue()
+    return log_contents

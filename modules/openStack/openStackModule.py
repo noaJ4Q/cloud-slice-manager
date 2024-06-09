@@ -30,9 +30,12 @@ def main(json_data):
     )
     if resp1.status_code == 201:
         print("SUCCESSFUL ADMIN AUTHENTICATION")
+        logger.info("SUCCESSFUL ADMIN AUTHENTICATION")
         admin_token = resp1.headers["X-Subject-Token"]
-        admin_token_for_project(admin_token=admin_token, json_data=json_data)
+        logs = admin_token_for_project(admin_token=admin_token, json_data=json_data)
+        logger.info(logs)
     else:
+        logger.error("FAILED ADMIN AUTHENTICATION")
         print("FAILED ADMIN AUTHENTICATION")
-    log_contents = log_stream.getvalue()
+    log_contents = logger.getvalue()
     return log_contents

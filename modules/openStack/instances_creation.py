@@ -41,8 +41,12 @@ def main(token_for_project, node_id, ports, json_data):
     print(resp.status_code)
     if resp.status_code == 202:
         print("INSTANCE CREATED SUCCESSFULLY")
+        logger.info("INSTANCE CREATED SUCCESSFULLY")
         instance_created = resp.json()
         print(json.dumps(instance_created))
+        logger.info(json.dumps(instance_created))
     else:
         print("FAILED INSTANCE CREATION")
-        return
+        logger.error("FAILED INSTANCE CREATION")
+    logs_contents = logger.getvalue()
+    return logs_contents

@@ -19,13 +19,17 @@ def main(token_for_project, json_data):
     resp3 = create_network(NEUTRON_ENDPOINT, token_for_project, network_name)
     if resp3.status_code == 201:
         print("NETWORK CREATED SUCCESSFULLY")
+        logger.info("NETWORK CREATED SUCCESSFULLY")
         network_created = resp3.json()
         network_id = json.dumps(network_created)["network"]["id"]
-        subnets_creation(
+        logs = subnets_creation(
             token_for_project=token_for_project,
             network_id=network_id,
             json_data=json_data,
         )
+        logger.info(logs)
     else:
         print("FAILED NETWORK CREATION")
-        return
+        logger.error("FAILED NETWORK CREATION")
+    log_contents = logger.getvalue()
+    return log_contents
