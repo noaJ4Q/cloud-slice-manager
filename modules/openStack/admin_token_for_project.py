@@ -29,13 +29,11 @@ def main(admin_token, json_data):
     )
     if resp.status_code == 201:
         log_info(logger, f"SUCCESSFUL AUTHENTICATION FOR PROJECT {project_name}")
-        """
         token_for_project = resp.headers["X-Subject-Token"]
         logs = network_creation(
             token_for_project=token_for_project, json_data=json_data
         )
         log_info(logger, logs)
-        """
     else:
         log_error(logger, f"FAILED AUTHENTICATION FOR PROJECT {project_name}")
     log_contents = log_buffer.getvalue()
