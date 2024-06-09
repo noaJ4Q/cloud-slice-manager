@@ -34,7 +34,7 @@ def main(token_for_project, network_id, json_data):
         log_info(logger, "SUBNET CREATED SUCCESSFULLY")
         subnet_created = resp.json()
 
-        project_id = json.dumps(subnet_created)["subnet"]["project_id"]
+        project_id = subnet_created["subnet"]["project_id"]
 
         ports = {}
         for edge_id, edge_info in json_data["visjs"]["edges"].items():
