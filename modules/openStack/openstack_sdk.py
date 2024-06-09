@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import subprocess
 
 import requests
 
@@ -19,6 +20,22 @@ def log_error(logger, message):
             {"timestamp": datetime.datetime.now().isoformat(), "message": message}
         )
     )
+
+
+# INIT OPENSTACK
+def execute_bash_command(command):
+    try:
+        response = subprocess.run(
+            command,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return True, response.stdout
+    except subprocess.CalledProcessError as e:
+        return False, e.stderr
 
 
 # KEYSTONE API

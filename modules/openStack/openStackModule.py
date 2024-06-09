@@ -5,7 +5,7 @@ import requests
 
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import (
-    create_project,
+    execute_bash_command,
     log_error,
     log_info,
     password_authentication_with_scoped_authorization,
@@ -42,30 +42,24 @@ def main(json_data):
     log_info(logger, "Inicio de la operación de OpenStack")
 
     # ===================================================== PROJECT CREATION =====================================================
-    log_info(logger, "Creando proyecto")
-    project_name = json_data["deployment"]["details"]["project_name"]
-    resp = create_project(KEYSTONE_ENDPOINT, project_name)
-    if resp.status_code == 201:
-        log_info(logger, "PROYECTO CREADO EXITOSAMENTE")
-        # ===================================================== ASSIGN ROLE TO USER =====================================================
-        log_info(logger, "Asignando rol al usuario")
-        project_id = resp.json()["project"]["id"]
-        headers = {
-            "X-Auth-Token": resp.headers["X-Subject-Token"],
-            "Content-Type": "application/json",
-        }
-        data = {
-            "role": {
-                "name": "admin",
-            }
-        }
-        resp2 = requests.post(
-            f"{KEYSTONE_ENDPOINT}/projects/{project_id}/roles",
-            headers=headers,
-            json=data,
+    command = (
+        "openstack project create --description "
+        + json_data["deployment"]["details"]["project_description"]
+        + " "
+        + json_data["deployment"]["details"]["project_name"]
+    )
+
+    success, output = execute_bash_command(command)
+    if success:
+        log_info(logger, "PROJECT CREATED SUCCESSFULLY")
+        command2 = (
+            "openstack role add admin --project "
+            + json_data["deployment"]["details"]["project_name"]
+            + " --user admin"
         )
-        if resp2.status_code == 201:
-            log_info(logger, "ROL ASIGNADO EXITOSAMENTE")
+        success, output = execute_bash_command(command2)
+        if success:
+            log_info(logger, "ROLE ADDED SUCCESSFULLY")
             # ===================================================== TOKEN FOR ADMIN USER =====================================================
             resp1 = password_authentication_with_scoped_authorization(
                 KEYSTONE_ENDPOINT,
@@ -85,9 +79,9 @@ def main(json_data):
             else:
                 log_error(logger, "FAILED ADMIN AUTHENTICATION")
         else:
-            log_error(logger, "FALLO EN LA ASIGNACIÓN DEL ROL AL USUARIO")
+            log_error(logger, "FAILED ROLE ADDITION")
     else:
-        log_error(logger, "FALLO EN LA CREACIÓN DEL PROYECTO")
+        log_error(logger, "FAILED PROJECT CREATION")
 
     log_contents = log_buffer.getvalue()
     return log_contents
