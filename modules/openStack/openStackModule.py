@@ -45,7 +45,9 @@ def main(json_data):
     if success:
         # ===================================================== PROJECT CREATION =====================================================
         command = (
-            "openstack project create "
+            "openstack project create --description '"
+            + json_data["deployment"]["details"]["project_description"]
+            + "' "
             + json_data["deployment"]["details"]["project_name"]
         )
 
