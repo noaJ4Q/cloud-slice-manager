@@ -71,7 +71,7 @@ def create_slice():
             else:
                 # procedimiento linux
                 slice = request.json["slice"]
-                return jsonify({"message": "success", "slice": slice})
+                return jsonify({"message": "LinuxCluster deployment processed"})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
