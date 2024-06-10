@@ -70,7 +70,6 @@ def create_slice():
                 return jsonify({"message": "OpenStack deployment processed"})
             else:
                 # procedimiento linux
-                slice = request.json["slice"]
                 return jsonify({"message": "LinuxCluster deployment processed"})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
