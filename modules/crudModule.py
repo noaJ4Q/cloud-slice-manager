@@ -66,8 +66,10 @@ def create_slice():
                 return jsonify({"message": "Missing JSON from topology"}), 400
 
             if request.json["deployment"]["platform"] == "OpenStack":
-                # logs = openStackModule(data)
-                return jsonify({"message": "OpenStack deployment processed"})
+                logs = openStackModule(data)
+                return jsonify(
+                    {"message": "OpenStack deployment processed", "logs": logs}
+                )
             else:
                 # procedimiento linux
                 return jsonify({"message": "LinuxCluster deployment processed"})
