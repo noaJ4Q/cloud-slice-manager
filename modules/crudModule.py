@@ -5,6 +5,7 @@ import requests
 from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import collection
 from pyvis.network import Network
+from pymongo import MongoClient
 
 from .openStack.openStackModule import main as openStackModule
 
@@ -148,23 +149,40 @@ def generate_diag(userId, json_data):
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
 
+def db_connection_monitoreo():
+    try:
+        client = MongoClient("localhost", 27017)
+        monitoreo_db = client["monitoreo"]
+    except Exception as e:
+        print(f"Error durante la conexión: {e}")
+        return None
+    return monitoreo_db
+
+
+db = db_connection_monitoreo()
+collection = db["worker1"] if db else None
+
+
 @crudModule.route("/monitoreo/worker1", methods=["GET"])
 def get_latest_metric():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        data = request.json
-        if not data:
-            return jsonify({"message": "Missing Json connection error"}), 500
 
-        #latest_metric = collection.find_one(sort=[("_id", -1)])
-        #if not latest_metric:
-        #    return jsonify({"message": "No data available"}), 404
+        if not collection:
+            return jsonify({"message": "Database connection error"}), 500
 
-        #del latest_metric["_id"]
+        latest_metrics = list(collection.find().sort("time", -1).limit(1))
+        if not latest_metrics:
+            return jsonify({"message": "No data available"}), 404
 
-        return jsonify({"message": "success", "data": data}), 200
+        latest_metric = latest_metrics[0]
+        del latest_metric["_id"]
+
+        return jsonify({"message": "success", "data": latest_metric}), 200
     except jwt.ExpiredSignatureError:
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
