@@ -174,7 +174,7 @@ def get_latest_metric_w1():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection1.find().sort("time", -1).limit(1))
+        latest_metrics = list(collection1.find().sort("time", 1).limit(1))
         if not latest_metrics:
             return jsonify({"message": "No data available"}), 404
 
@@ -199,7 +199,7 @@ def get_latest_metric_w2():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection2.find().sort("time", -1).limit(1))
+        latest_metrics = list(collection2.find().sort("time", 1).limit(1))
         if not latest_metrics:
             return jsonify({"message": "No data available"}), 404
 
@@ -224,7 +224,7 @@ def get_latest_metric_w3():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection3.find().sort("time", -1).limit(1))
+        latest_metrics = list(collection3.find().sort("time", 1).limit(1))
         if not latest_metrics:
             return jsonify({"message": "No data available"}), 404
 
