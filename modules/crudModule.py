@@ -153,21 +153,18 @@ def get_latest_metric():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if not decoded:
-            return jsonify({"message": "Database connection error"}), 500
+        data = request.json
+        if not data:
+            return jsonify({"message": "Missing Json connection error"}), 500
 
-        #latest_metrics = list(decoded.find().sort("time", -1).limit(1))
-        #if not latest_metrics:
-        #   return jsonify({"message": "No data available"}), 404
+        #latest_metric = collection.find_one(sort=[("_id", -1)])
+        #if not latest_metric:
+        #    return jsonify({"message": "No data available"}), 404
 
-        #latest_metric = latest_metrics[0]
-        # Remover el "_id" para mantener solo los datos
         #del latest_metric["_id"]
 
-        return jsonify({"message": "success", "data": decoded}), 200
+        return jsonify({"message": "success", "data": data}), 200
     except jwt.ExpiredSignatureError:
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
-    except Exception as e:
-        return jsonify({"message": f"An error occurred: {e}"}), 500
