@@ -224,11 +224,12 @@ def get_latest_metric_w3():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection3.find().sort("time", 1).limit(1))
-        if not latest_metrics:
+        # Obtener el documento más reciente
+        latest_metric = collection3.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
             return jsonify({"message": "No data available"}), 404
 
-        latest_metric = latest_metrics[0]
+        # Eliminar el campo "_id" del resultado final
         del latest_metric["_id"]
 
         return jsonify({"message": "success", "data": latest_metric}), 200
