@@ -191,7 +191,7 @@ def get_latest_metric_w1():
 
 
 @crudModule.route("/monitoreo/worker2", methods=["GET"])
-def get_latest_metric_w1():
+def get_latest_metric_w2():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
@@ -216,7 +216,7 @@ def get_latest_metric_w1():
 
 
 @crudModule.route("/monitoreo/worker3", methods=["GET"])
-def get_latest_metric_w1():
+def get_latest_metric_w3():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
