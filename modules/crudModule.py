@@ -3,6 +3,7 @@ import logging
 import jwt
 import requests
 from flask import Blueprint, jsonify, request, send_from_directory
+from pymongo import collection
 from pyvis.network import Network
 
 from .openStack.openStackModule import main as openStackModule
@@ -146,3 +147,24 @@ def generate_diag(userId, json_data):
     net.show(html_file)
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
+
+@crudModule.route("/monitoreo/worker1", methods=["GET"])
+def get_latest_metric():
+    token = request.headers.get("Authorization")
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+        if not collection:
+            return jsonify({"message": "Database connection error"}), 500
+
+        latest_metric = collection.find_one(sort=[("_id", -1)])
+        if not latest_metric:
+            return jsonify({"message": "No data available"}), 404
+
+        # Remover el "_id" para mantener solo los datos
+        del latest_metric["_id"]
+
+        return jsonify({"message": "success", "data": latest_metric}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401

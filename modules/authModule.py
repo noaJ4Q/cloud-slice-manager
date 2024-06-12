@@ -1,5 +1,4 @@
 import hashlib
-
 import jwt
 
 # from entities.user import User
@@ -17,8 +16,6 @@ def db_connection():
         print(f"Error durante la conexión: {e}")
         return None
     return slicemanager_db
-
-
 db = db_connection()
 
 
