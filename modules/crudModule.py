@@ -174,11 +174,12 @@ def get_latest_metric_w1():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection1.find().sort("time", 1).limit(1))
-        if not latest_metrics:
+        # Obtener el documento más reciente
+        latest_metric = collection1.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
             return jsonify({"message": "No data available"}), 404
 
-        latest_metric = latest_metrics[0]
+        # Eliminar el campo "_id" del resultado final
         del latest_metric["_id"]
 
         return jsonify({"message": "success", "data": latest_metric}), 200
@@ -199,11 +200,12 @@ def get_latest_metric_w2():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection2.find().sort("time", 1).limit(1))
-        if not latest_metrics:
+        # Obtener el documento más reciente
+        latest_metric = collection2.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
             return jsonify({"message": "No data available"}), 404
 
-        latest_metric = latest_metrics[0]
+        # Eliminar el campo "_id" del resultado final
         del latest_metric["_id"]
 
         return jsonify({"message": "success", "data": latest_metric}), 200
@@ -213,6 +215,7 @@ def get_latest_metric_w2():
         return jsonify({"message": "Invalid token"}), 401
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
+
 
 
 @crudModule.route("/monitoreo/worker3", methods=["GET"])
