@@ -112,7 +112,6 @@ def serve_graph(filename):
 
 
 def generate_diag(userId, json_data):
-
     net = Network(notebook=True)
 
     nodes = json_data.get("visjs", {}).get("nodes", {})
@@ -148,18 +147,20 @@ def generate_diag(userId, json_data):
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
+
 @crudModule.route("/monitoreo/worker1", methods=["GET"])
 def get_latest_metric():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if not collection:
+        if not decoded:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metric = collection.find_one(sort=[("_id", -1)])
-        if not latest_metric:
+        latest_metrics = list(decoded.find().sort("time", -1).limit(1))
+        if not latest_metrics:
             return jsonify({"message": "No data available"}), 404
 
+        latest_metric = latest_metrics[0]
         # Remover el "_id" para mantener solo los datos
         del latest_metric["_id"]
 
@@ -168,3 +169,5 @@ def get_latest_metric():
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
