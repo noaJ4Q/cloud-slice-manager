@@ -156,15 +156,15 @@ def get_latest_metric():
         if not decoded:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(decoded.find().sort("time", -1).limit(1))
-        if not latest_metrics:
-            return jsonify({"message": "No data available"}), 404
+        #latest_metrics = list(decoded.find().sort("time", -1).limit(1))
+        #if not latest_metrics:
+        #   return jsonify({"message": "No data available"}), 404
 
-        latest_metric = latest_metrics[0]
+        #latest_metric = latest_metrics[0]
         # Remover el "_id" para mantener solo los datos
-        del latest_metric["_id"]
+        #del latest_metric["_id"]
 
-        return jsonify({"message": "success", "data": latest_metric}), 200
+        return jsonify({"message": "success", "data": decoded}), 200
     except jwt.ExpiredSignatureError:
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
