@@ -95,7 +95,7 @@ def save_slice():
 
             id = save_structure_to_db(data)
 
-            return jsonify({"message": "success", "sliceId": int(id.inserted_id)})
+            return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
