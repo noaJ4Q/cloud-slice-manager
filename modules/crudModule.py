@@ -1,11 +1,10 @@
 import logging
-
 import jwt
-import requests
 from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import collection
 from pyvis.network import Network
 from pymongo import MongoClient
+import datetime
 
 from .openStack.openStackModule import main as openStackModule
 
@@ -29,18 +28,18 @@ SLICES = [
         "created": "2021-06-01 10:00:00",
         "status": "active",
     },
-    {
-        "id": 2,
-        "name": "Slice 2",
-        "user": 3,
-        "topology": "Anillo",
-        "vms": 3,
-        "zone": "Zona 2",
-        "created": "2021-06-01 10:00:00",
-        "status": "active",
-    },
 ]
 
+def db_connection():
+    try:
+        client = MongoClient("localhost", 27017)
+        slicemanager_db = client["slicemanager_db"]
+    except Exception as e:
+        print(f"Error durante la conexión: {e}")
+        return None
+    return slicemanager_db
+
+db = db_connection()
 
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
@@ -48,7 +47,8 @@ def list_slices():
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if decoded["role"] == "manager":
-            return jsonify({"message": "success", "slices": SLICES})
+            slices = db.deployed_slices.find()
+            return jsonify({"message": "success", "slices": slices})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
@@ -82,6 +82,25 @@ def create_slice():
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
 
+@crudModule.route("/slice", methods=["POST"])
+def save_slice():
+    token = request.headers.get("Authorization")
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+        if decoded["role"] == "manager": # AUTHORIZATION
+            data = request.get_json()
+            if not data:
+                return jsonify({"message": "Missing JSON from topology"}), 400
+
+            save_structure_to_db(data)
+
+            return jsonify({"message": "success", "slice": data})
+        else:
+            return jsonify({"message": "Unauthorized access"}), 401
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():
@@ -111,6 +130,10 @@ def gen_diag():
 def serve_graph(filename):
     return send_from_directory("topologyGraph", filename)
 
+
+def save_structure_to_db(data):
+    data["deployment"]["details"]["created"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    db.slices.insert_one(data)
 
 def generate_diag(userId, json_data):
     net = Network(notebook=True)
