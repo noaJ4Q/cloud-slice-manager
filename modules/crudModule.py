@@ -183,11 +183,13 @@ def db_connection_monitoreo():
 
 
 db = db_connection_monitoreo()
-collection = db["worker1"] if db else None
+collection1 = db["worker1"] if db else None
+collection2 = db["worker2"] if db else None
+collection3 = db["worker3"] if db else None
 
 
 @crudModule.route("/monitoreo/worker1", methods=["GET"])
-def get_latest_metric():
+def get_latest_metric_w1():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
@@ -195,11 +197,65 @@ def get_latest_metric():
         if not collection:
             return jsonify({"message": "Database connection error"}), 500
 
-        latest_metrics = list(collection.find().sort("time", -1).limit(1))
-        if not latest_metrics:
+        # Obtener el documento más reciente
+        latest_metric = collection1.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
             return jsonify({"message": "No data available"}), 404
 
-        latest_metric = latest_metrics[0]
+        # Eliminar el campo "_id" del resultado final
+        del latest_metric["_id"]
+
+        return jsonify({"message": "success", "data": latest_metric}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+
+
+@crudModule.route("/monitoreo/worker2", methods=["GET"])
+def get_latest_metric_w2():
+    token = request.headers.get("Authorization")
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+
+        if not collection:
+            return jsonify({"message": "Database connection error"}), 500
+
+        # Obtener el documento más reciente
+        latest_metric = collection2.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
+            return jsonify({"message": "No data available"}), 404
+
+        # Eliminar el campo "_id" del resultado final
+        del latest_metric["_id"]
+
+        return jsonify({"message": "success", "data": latest_metric}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+
+
+
+@crudModule.route("/monitoreo/worker3", methods=["GET"])
+def get_latest_metric_w3():
+    token = request.headers.get("Authorization")
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+
+        if not collection:
+            return jsonify({"message": "Database connection error"}), 500
+
+        # Obtener el documento más reciente
+        latest_metric = collection3.find_one({}, sort=[('_id', -1)])
+        if not latest_metric:
+            return jsonify({"message": "No data available"}), 404
+
+        # Eliminar el campo "_id" del resultado final
         del latest_metric["_id"]
 
         return jsonify({"message": "success", "data": latest_metric}), 200
