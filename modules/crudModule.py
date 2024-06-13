@@ -173,18 +173,18 @@ def generate_diag(userId, json_data):
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
 
-# def db_connection_monitoreo():
-#     try:
-#         client = MongoClient("localhost", 27017)
-#         monitoreo_db = client["monitoreo"]
-#     except Exception as e:
-#         print(f"Error durante la conexión: {e}")
-#         return None
-#     return monitoreo_db
+def db_connection_monitoreo():
+    try:
+        client = MongoClient("localhost", 27017)
+        monitoreo_db = client["monitoreo"]
+    except Exception as e:
+        print(f"Error durante la conexión: {e}")
+        return None
+    return monitoreo_db
 
 
-# db = db_connection_monitoreo()
-# collection = db["worker1"] if db else None
+db = db_connection_monitoreo()
+collection = db["worker1"] if db else None
 
 
 @crudModule.route("/monitoreo/worker1", methods=["GET"])
