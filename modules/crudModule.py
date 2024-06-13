@@ -94,8 +94,10 @@ def save_slice():
                 return jsonify({"message": "Missing JSON from topology"}), 400
 
             id = save_structure_to_db(data)
+            print(id.inserted_id)
+            print(type(id.inserted_id))
 
-            return jsonify({"message": "success", "sliceId": id})
+            return jsonify({"message": "success", "sliceId": "id"})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
