@@ -93,9 +93,9 @@ def save_slice():
             if not data:
                 return jsonify({"message": "Missing JSON from topology"}), 400
 
-            save_structure_to_db(data)
+            id = save_structure_to_db(data)
 
-            return jsonify({"message": "success", "slice": data})
+            return jsonify({"message": "success", "sliceId": id})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
@@ -134,7 +134,7 @@ def serve_graph(filename):
 
 def save_structure_to_db(data):
     data["deployment"]["details"]["created"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    db.slices.insert_one(data)
+    return db.slices.insert_one(data)
 
 def generate_diag(userId, json_data):
     net = Network(notebook=True)
