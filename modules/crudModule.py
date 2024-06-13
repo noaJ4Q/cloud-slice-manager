@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import collection
 from pyvis.network import Network
 from pymongo import MongoClient
-import datetime
+from datetime import datetime
 
 from .openStack.openStackModule import main as openStackModule
 
