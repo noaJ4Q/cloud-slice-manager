@@ -48,7 +48,7 @@ def list_slices():
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if decoded["role"] == "manager":
             # find all slices in db, in case there are none, return an empty list
-            slices = list(db_crud.slices.find()) if db else []
+            slices = list(db_crud.slices.find()) if db_crud else []
             return jsonify({"message": "success", "slices": slices})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
