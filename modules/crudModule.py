@@ -39,7 +39,7 @@ def db_connection():
         return None
     return slicemanager_db
 
-db = db_connection()
+db_crud = db_connection()
 
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
@@ -48,7 +48,7 @@ def list_slices():
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if decoded["role"] == "manager":
             # find all slices in db, in case there are none, return an empty list
-            slices = list(db.slices.find()) if db else []
+            slices = list(db_crud.slices.find()) if db else []
             return jsonify({"message": "success", "slices": slices})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
@@ -94,8 +94,10 @@ def save_slice():
                 return jsonify({"message": "Missing JSON from topology"}), 400
 
             id = save_structure_to_db(data)
+            print(id.inserted_id)
+            print(type(id.inserted_id))
 
-            return jsonify({"message": "success", "sliceId": id})
+            return jsonify({"message": "success", "sliceId": "id"})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
     except jwt.ExpiredSignatureError:
@@ -134,7 +136,7 @@ def serve_graph(filename):
 
 def save_structure_to_db(data):
     data["deployment"]["details"]["created"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return db.slices.insert_one(data)
+    return db_crud.slices.insert_one(data)
 
 def generate_diag(userId, json_data):
     net = Network(notebook=True)
