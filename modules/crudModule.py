@@ -184,11 +184,12 @@ def db_connection_monitoreo():
 
 
 db = db_connection_monitoreo()
-collection = db["worker1"] if db else None
+# collection = db["worker1"] if db else None
 
 
-@crudModule.route("/monitoreo/worker1", methods=["GET"])
-def get_latest_metric():
+@crudModule.route("/monitoreo/<worker>", methods=["GET"])
+def get_latest_metric(worker):
+    collection = db[worker] if db else None
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
