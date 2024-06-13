@@ -39,7 +39,7 @@ def db_connection():
         return None
     return slicemanager_db
 
-db_crud = db_connection()
+db = db_connection()
 
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
@@ -48,7 +48,7 @@ def list_slices():
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if decoded["role"] == "manager":
             # find all slices in db, in case there are none, return an empty list
-            slices = list(db_crud.slices.find()) if db else []
+            slices = list(db.slices.find()) if db else []
             return jsonify({"message": "success", "slices": slices})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
@@ -136,7 +136,7 @@ def serve_graph(filename):
 
 def save_structure_to_db(data):
     data["deployment"]["details"]["created"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return db_crud.slices.insert_one(data)
+    return db.slices.insert_one(data)
 
 def generate_diag(userId, json_data):
     net = Network(notebook=True)
@@ -175,18 +175,18 @@ def generate_diag(userId, json_data):
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
 
-def db_connection_monitoreo():
-    try:
-        client = MongoClient("localhost", 27017)
-        monitoreo_db = client["monitoreo"]
-    except Exception as e:
-        print(f"Error durante la conexión: {e}")
-        return None
-    return monitoreo_db
+# def db_connection_monitoreo():
+#     try:
+#         client = MongoClient("localhost", 27017)
+#         monitoreo_db = client["monitoreo"]
+#     except Exception as e:
+#         print(f"Error durante la conexión: {e}")
+#         return None
+#     return monitoreo_db
 
 
-db = db_connection_monitoreo()
-collection = db["worker1"] if db else None
+# db = db_connection_monitoreo()
+# collection = db["worker1"] if db else None
 
 
 @crudModule.route("/monitoreo/worker1", methods=["GET"])
