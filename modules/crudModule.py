@@ -64,8 +64,8 @@ def create_slice():
             data = request.get_json()
             if not data:
                 return jsonify({"message": "Missing JSON from topology"}), 400
-
             if request.json["deployment"]["platform"] == "OpenStack":
+                # TODO 4: Call VM placement to check for available resources
                 logs = openStackModule(data)
                 return jsonify(
                     {"message": "OpenStack deployment processed", "logs": logs}

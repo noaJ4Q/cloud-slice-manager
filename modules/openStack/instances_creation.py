@@ -47,6 +47,9 @@ def main(token_for_project, node_id, ports, json_data):
         log_info(logger, "INSTANCE CREATED SUCCESSFULLY")
         instance_created = resp.json()
         print(json.dumps(instance_created))
+        # TODO 1: Save instance_created["server"]["id"] in database
+        # TODO 2: Get instance_created["server"]["addresses"] and update controller with 10.20.12.148
+        # TODO 3: Save TODO 2 in database
     else:
         log_error(logger, "FAILED INSTANCE CREATION")
     logs_contents = log_buffer.getvalue()

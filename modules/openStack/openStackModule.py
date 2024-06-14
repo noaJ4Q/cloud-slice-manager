@@ -77,6 +77,7 @@ def main(json_data):
                     )
                     log_info(logger, logs)
                 else:
+                    # TODO notify error to admin
                     log_error(logger, "FAILED ADMIN AUTHENTICATION")
             else:
                 log_error(logger, "FAILED ROLE ADDITION")
