@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 
 import jwt
@@ -38,8 +39,12 @@ def auth_user():
     user = validate_user(username, password)
 
     if user:
+        expired_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+
         token = jwt.encode(
-            {"_id": str(user["_id"]), "role": user["role"]}, "secret", algorithm="HS256"
+            {"_id": str(user["_id"]), "role": user["role"], "expired": expired_time},
+            "secret",
+            algorithm="HS256",
         )
         return jsonify({"message": "success", "token": token}), 200
     else:
