@@ -60,6 +60,8 @@ def list_slices():
         if decoded["role"] == "manager":
             # find all slices in db, in case there are none, return an empty list
             slices = list(db_crud.slices.find()) if db_crud else []
+            for slice in slices:
+                slice["_id"] = str(slice["_id"])
             return jsonify({"message": "success", "slices": slices})
         else:
             return jsonify({"message": "Unauthorized access"}), 401
