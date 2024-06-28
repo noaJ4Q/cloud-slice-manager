@@ -73,7 +73,7 @@ def list_slices():
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
     except Exception as e:
-        return jsonify({"message": f"An error occurred: {e}"}), 500
+        return jsonify({"message": f"An errorr occurred: {e}"}), 500
 
 
 @crudModule.route("/slices", methods=["POST"])
