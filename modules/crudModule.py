@@ -1,11 +1,10 @@
 import logging
-import jwt
-from flask import Blueprint, jsonify, request, send_from_directory
-from pymongo import collection
-from pyvis.network import Network
-from pymongo import MongoClient
 from datetime import datetime
 
+import jwt
+from flask import Blueprint, jsonify, request, send_from_directory
+from pymongo import MongoClient, collection
+from pyvis.network import Network
 
 from .openStack.openStackModule import main as openStackModule
 
@@ -31,6 +30,7 @@ SLICES = [
     },
 ]
 
+
 # DB CONNECTIONS
 def db_connection():
     try:
@@ -41,6 +41,7 @@ def db_connection():
         return None
     return slicemanager_db
 
+
 def db_connection_monitoreo():
     try:
         client = MongoClient("localhost", 27017)
@@ -50,20 +51,26 @@ def db_connection_monitoreo():
         return None
     return monitoreo_db
 
+
 db_crud = db_connection()
 db = db_connection_monitoreo()
+
 
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
     token = request.headers.get("Authorization")
 
-    decoded = None
-    validate_token(token, decoded)
-    # find all slices in db, in case there are none, return an empty list
-    slices = list(db_crud.slices.find()) if db_crud else []
-    for slice in slices:
-        slice["_id"] = str(slice["_id"])
-    return jsonify({"message": "success", "slices": slices})
+    validation = True if validate_token(token) == True else False
+
+    if validation:
+        # find all slices in db, in case there are none, return an empty list
+        slices = list(db_crud.slices.find()) if db_crud else []
+        for slice in slices:
+            slice["_id"] = str(slice["_id"])
+        return jsonify({"message": "success", "slices": slices})
+    else:
+        return jsonify({"message": "Token expired"}), 411
+
 
 @crudModule.route("/slices", methods=["POST"])
 def create_slice():
@@ -90,12 +97,13 @@ def create_slice():
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
 
+
 @crudModule.route("/slice", methods=["POST"])
 def save_slice():
     token = request.headers.get("Authorization")
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if decoded["role"] == "manager": # AUTHORIZATION
+        if decoded["role"] == "manager":  # AUTHORIZATION
             data = request.get_json()
             if not data:
                 return jsonify({"message": "Missing JSON from topology"}), 400
@@ -109,6 +117,7 @@ def save_slice():
         return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
+
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():
@@ -140,8 +149,11 @@ def serve_graph(filename):
 
 
 def save_structure_to_db(data):
-    data["deployment"]["details"]["created"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data["deployment"]["details"]["created"] = datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
     return db_crud.slices.insert_one(data)
+
 
 def generate_diag(userId, json_data):
     net = Network(notebook=True)
@@ -179,12 +191,13 @@ def generate_diag(userId, json_data):
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
+
 @crudModule.route("/monitoreo/<worker>", methods=["GET"])
 def get_latest_metric(worker):
     collection = db[worker] if db else None
     token = request.headers.get("Authorization")
 
-    valid_token(token)
+    validate_token(token)
 
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
@@ -207,23 +220,23 @@ def get_latest_metric(worker):
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
 
+
 def fecha_ya_vencio(fecha_definida):
-    fecha_definida_dt = datetime.strptime(fecha_definida, '%Y-%m-%d %H:%M:%S')
+    fecha_definida_dt = datetime.strptime(fecha_definida, "%Y-%m-%d %H:%M:%S")
     fecha_actual_dt = datetime.now()
-    
+
     return fecha_actual_dt > fecha_definida_dt
 
-def validate_token(token, decoded):
+
+def validate_token(token):
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if fecha_ya_vencio(decoded["expired"]):
             return jsonify({"message", "Token expired"}), 411
-        if decoded["role"] == "manager":
-           ...
-        else:
+        if decoded["role"] != "manager":
             return jsonify({"message": "Unauthorized access"}), 401
+        return True
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
-
