@@ -6,6 +6,7 @@ from pyvis.network import Network
 from pymongo import MongoClient
 from datetime import datetime
 
+
 from .openStack.openStackModule import main as openStackModule
 
 logger = logging.getLogger("crudModule")
@@ -55,21 +56,14 @@ db = db_connection_monitoreo()
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
     token = request.headers.get("Authorization")
-    try:
-        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if decoded["role"] == "manager":
-            # find all slices in db, in case there are none, return an empty list
-            slices = list(db_crud.slices.find()) if db_crud else []
-            for slice in slices:
-                slice["_id"] = str(slice["_id"])
-            return jsonify({"message": "success", "slices": slices})
-        else:
-            return jsonify({"message": "Unauthorized access"}), 401
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
 
+    decoded = None
+    validate_token(token, decoded)
+    # find all slices in db, in case there are none, return an empty list
+    slices = list(db_crud.slices.find()) if db_crud else []
+    for slice in slices:
+        slice["_id"] = str(slice["_id"])
+    return jsonify({"message": "success", "slices": slices})
 
 @crudModule.route("/slices", methods=["POST"])
 def create_slice():
@@ -185,13 +179,13 @@ def generate_diag(userId, json_data):
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
 
-
-
-
 @crudModule.route("/monitoreo/<worker>", methods=["GET"])
 def get_latest_metric(worker):
     collection = db[worker] if db else None
     token = request.headers.get("Authorization")
+
+    valid_token(token)
+
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
 
@@ -212,3 +206,24 @@ def get_latest_metric(worker):
         return jsonify({"message": "Invalid token"}), 401
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
+
+def fecha_ya_vencio(fecha_definida):
+    fecha_definida_dt = datetime.strptime(fecha_definida, '%Y-%m-%d %H:%M:%S')
+    fecha_actual_dt = datetime.now()
+    
+    return fecha_actual_dt > fecha_definida_dt
+
+def validate_token(token, decoded):
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+        if fecha_ya_vencio(decoded["expired"]):
+            return jsonify({"message", "Token expired"}), 411
+        if decoded["role"] == "manager":
+           ...
+        else:
+            return jsonify({"message": "Unauthorized access"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+
