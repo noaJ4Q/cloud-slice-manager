@@ -60,16 +60,20 @@ db = db_connection_monitoreo()
 def list_slices():
     token = request.headers.get("Authorization")
 
-    validation = True if validate_token(token) == True else False
+    validation = validate_token(token)
 
-    if validation:
+    if not isinstance(validation, dict):
+        return validation
+
+    try:
+
         # find all slices in db, in case there are none, return an empty list
         slices = list(db_crud.slices.find()) if db_crud else []
         for slice in slices:
             slice["_id"] = str(slice["_id"])
-        return jsonify({"message": "success", "slices": slices})
-    else:
-        return jsonify({"message": "Token expired"}), 411
+        return jsonify({"message": "success", "slices": slices}), 200
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
 
 
 @crudModule.route("/slices", methods=["POST"])
@@ -229,13 +233,17 @@ def fecha_ya_vencio(fecha_definida):
 
 
 def validate_token(token):
+    if not token:
+        return jsonify({"message": "Missing token"}), 401
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if fecha_ya_vencio(decoded["expired"]):
             return jsonify({"message", "Token expired"}), 411
         if decoded["role"] != "manager":
             return jsonify({"message": "Unauthorized access"}), 401
-        return True
+        return decoded
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token"}), 401
     except Exception as e:
