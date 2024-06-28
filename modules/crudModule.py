@@ -238,7 +238,7 @@ def validate_token(token):
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if fecha_ya_vencio(decoded["expired"]):
-            return jsonify({"message", "Token expired"}), 411
+            return jsonify({"message": "Token expired"}), 411
         if decoded["role"] != "manager":
             return jsonify({"message": "Unauthorized access"}), 401
         return decoded
