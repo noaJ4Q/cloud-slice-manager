@@ -1,6 +1,8 @@
-import hashlib
-import jwt
 import datetime
+import hashlib
+
+import jwt
+
 # from entities.user import User
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
@@ -16,6 +18,8 @@ def db_connection():
         print(f"Error durante la conexión: {e}")
         return None
     return slicemanager_db
+
+
 db = db_connection()
 
 
@@ -34,12 +38,17 @@ def auth_user():
 
     user = validate_user(username, password)
 
-
     if user:
         expired_time = datetime.datetime.now() + datetime.timedelta(seconds=10)
 
         token = jwt.encode(
-            {"_id": str(user["_id"]), "role": user["role"], "expired": expired_time.strftime("%Y-%m-$d %H:%M:%S")}, "secret", algorithm="HS256"
+            {
+                "_id": str(user["_id"]),
+                "role": user["role"],
+                "expired": expired_time.strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            "secret",
+            algorithm="HS256",
         )
         return jsonify({"message": "success", "token": token}), 200
     else:
