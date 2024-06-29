@@ -17,20 +17,6 @@ logger.addHandler(handler)
 
 crudModule = Blueprint("crudModule", __name__)
 
-SLICES = [
-    {
-        "id": 1,
-        "name": "Slice 1",
-        "user": 3,
-        "topology": "Malla",
-        "vms": 2,
-        "zone": "Zona 1",
-        "created": "2021-06-01 10:00:00",
-        "status": "active",
-    },
-]
-
-
 # DB CONNECTIONS
 def db_connection():
     try:
@@ -58,94 +44,80 @@ db = db_connection_monitoreo()
 
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
+
     token = request.headers.get("Authorization")
-
     validation = validate_token(token)
-
     if not isinstance(validation, dict):
         return validation
 
     try:
 
-        # find all slices in db, in case there are none, return an empty list
-        slices = list(db_crud.slices.find()) if db_crud else []
+        slices = list(db_crud.slices.find()) if db_crud else [] # FIND SLICES
         for slice in slices:
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
+
     except Exception as e:
         return jsonify({"message": f"An errorr occurred: {e}"}), 500
 
 
 @crudModule.route("/slices", methods=["POST"])
 def create_slice():
+
     token = request.headers.get("Authorization")
-    try:
-        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if decoded["role"] == "manager":
-            data = request.get_json()
-            if not data:
-                return jsonify({"message": "Missing JSON from topology"}), 400
+    validation = validate_token(token)
+    if not isinstance(validation, dict):
+        return validation
 
-            if request.json["deployment"]["platform"] == "OpenStack":
-                logs = openStackModule(data)
-                return jsonify(
-                    {"message": "OpenStack deployment processed", "logs": logs}
-                )
-            else:
-                # procedimiento linux
-                return jsonify({"message": "LinuxCluster deployment processed"})
-        else:
-            return jsonify({"message": "Unauthorized access"}), 401
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing JSON from topology"}), 400
 
+    if request.json["deployment"]["platform"] == "OpenStack":
+        logs = openStackModule(data)
+        return jsonify({"message": "OpenStack deployment processed", "logs": logs})
+    else:
+        # procedimiento linux
+        return jsonify({"message": "LinuxCluster deployment processed"})
 
-@crudModule.route("/slice", methods=["POST"])
+@crudModule.route("/slices/draft", methods=["POST"])
 def save_slice():
+
     token = request.headers.get("Authorization")
-    try:
-        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        if decoded["role"] == "manager":  # AUTHORIZATION
-            data = request.get_json()
-            if not data:
-                return jsonify({"message": "Missing JSON from topology"}), 400
+    validation = validate_token(token)
+    if not isinstance(validation, dict):
+        return validation
 
-            id = save_structure_to_db(data)
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing JSON from topology"}), 400
 
-            return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
-        else:
-            return jsonify({"message": "Unauthorized access"}), 401
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
+    id = save_structure_to_db(data)
 
+    return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():
+
     token = request.headers.get("Authorization")
-    try:
-        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
-        data = request.get_json()
-        if not data:
-            return jsonify({"message": "Missing JSON from topology"}), 400
+    validation = validate_token(token)
+    if not isinstance(validation, dict):
+        return validation
 
-        url = generate_diag(decoded["_id"], data)
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing JSON from topology"}), 400
 
-        return jsonify(
-            {
-                "message": "success",
-                "url": url,
-                "tip": "We recommend to open url in private mode to avoid loading cache.",
-            }
-        )
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
+    print(validation)
+    # url = generate_diag(decoded["_id"], data)
 
+    return jsonify(
+        {
+            "message": "success",
+            # "url": url,
+            "tip": "We recommend to open url in private mode to avoid loading cache.",
+        }
+    ) 
 
 @crudModule.route("/slices/topologyGraph/<path:filename>")
 def serve_graph(filename):
@@ -228,7 +200,6 @@ def get_latest_metric(worker):
 def fecha_ya_vencio(fecha_definida):
     fecha_definida_dt = datetime.strptime(fecha_definida, "%Y-%m-%d %H:%M:%S")
     fecha_actual_dt = datetime.now()
-
     return fecha_actual_dt > fecha_definida_dt
 
 
