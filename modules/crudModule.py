@@ -117,11 +117,11 @@ def save_draft_slice():
 
     decoded = validation
 
-    id = save_structure_to_db(data)
+    id = save_draft_to_db(data)
     url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
     if update_graph_to_db(str(id.inserted_id), url):
         return jsonify(
-            {"message": "success", "sliceId": str(id.inserted_id), "graph_url": url}
+            {"message": "success", "sliceId": str(id.inserted_id)}
         )
     else:
         return jsonify({"message": "Error saving graph url"}), 500
@@ -156,7 +156,7 @@ def serve_graph(filename):
     return send_from_directory("topologyGraph", filename)
 
 
-def save_structure_to_db(data):
+def save_draft_to_db(data):
     data["deployment"]["details"]["created"] = datetime.now().strftime(
         "%Y-%m-%d %H:%M:%S"
     )
