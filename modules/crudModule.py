@@ -124,7 +124,13 @@ def save_draft_slice():
             {"message": "success", "sliceId": str(id.inserted_id), "graph_url": url}
         )
     else:
-        return jsonify({"message": "Error saving graph url"}), 500
+        return jsonify(
+            {
+                "message": "success",
+                "sliceId": str(id.inserted_id),
+                "graph_url": "Server error",
+            }
+        )
 
 
 @crudModule.route("/slices/diag", methods=["POST"])
