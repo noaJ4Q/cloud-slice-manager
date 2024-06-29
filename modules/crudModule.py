@@ -51,7 +51,7 @@ def list_slices():
 
     try:
 
-        slices = list(db_crud.slices.find()) if db_crud else [] # FIND SLICES
+        slices = list(db_crud.deployed_slices.find()) if db_crud else [] # FIND SLICES
         for slice in slices:
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
