@@ -9,8 +9,7 @@ from pymongo import MongoClient
 # Configurar el logger para incluir el nombre del módulo
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - [authModule] - %(name)s - %(levelname)s - %(message)s',
-                    filename='app.log',
-                    filemode='w')  # 'w' para sobrescribir el archivo
+                    filename='app.log')
 logger = logging.getLogger(__name__)
 
 authModule = Blueprint("authModule", __name__)
