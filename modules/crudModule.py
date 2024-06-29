@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime
 import os
+from datetime import datetime
 
 import jwt
+from bson import ObjectId
 from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import MongoClient, collection
 from pyvis.network import Network
@@ -18,6 +19,7 @@ logger.addHandler(handler)
 
 crudModule = Blueprint("crudModule", __name__)
 
+
 # DB CONNECTIONS
 def db_connection():
     try:
@@ -28,6 +30,7 @@ def db_connection():
         return None
     return slicemanager_db
 
+
 def db_connection_monitoreo():
     try:
         client = MongoClient("localhost", 27017)
@@ -36,6 +39,7 @@ def db_connection_monitoreo():
         print(f"Error durante la conexión: {e}")
         return None
     return monitoreo_db
+
 
 db_crud = db_connection()
 db = db_connection_monitoreo()
@@ -51,7 +55,7 @@ def list_slices():
 
     try:
 
-        slices = list(db_crud.deployed_slices.find()) if db_crud else [] # FIND SLICES
+        slices = list(db_crud.deployed_slices.find()) if db_crud else []  # FIND SLICES
         for slice in slices:
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
@@ -111,9 +115,17 @@ def save_draft_slice():
     if not data:
         return jsonify({"message": "Missing JSON from topology"}), 400
 
-    id = save_structure_to_db(data)
+    decoded = validation
 
-    return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
+    id = save_structure_to_db(data)
+    url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
+    if update_graph_to_db(str(id.inserted_id), url):
+        return jsonify(
+            {"message": "success", "sliceId": str(id.inserted_id), "graph_url": url}
+        )
+    else:
+        return jsonify({"message": "Error saving graph url"}), 500
+
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():
@@ -128,7 +140,7 @@ def gen_diag():
         return jsonify({"message": "Missing JSON from topology"}), 400
 
     decoded = validation
-    url = generate_diag(decoded["_id"], data)
+    url = generate_diag(decoded["_id"], "", data)
 
     return jsonify(
         {
@@ -136,7 +148,8 @@ def gen_diag():
             "url": url,
             "tip": "We recommend to open url in private mode to avoid loading cache.",
         }
-    ) 
+    )
+
 
 @crudModule.route("/slices/topologyGraph/<path:filename>")
 def serve_graph(filename):
@@ -150,7 +163,16 @@ def save_structure_to_db(data):
     return db_crud.slices_draft.insert_one(data)
 
 
-def generate_diag(userId, json_data):
+def update_graph_to_db(id, url):
+    document = db_crud.slices_draft.findOne({"_id": ObjectId(id)})
+    if document:
+        document["deployment"]["details"]["graph_url"] = url
+        db_crud.slices_draft.update_one({"_id": ObjectId(id)}, {"$set": document})
+        return True
+    return False
+
+
+def generate_diag(userId, topoId, json_data):
     net = Network(notebook=True)
 
     nodes = json_data.get("visjs", {}).get("nodes", {})
@@ -181,7 +203,7 @@ def generate_diag(userId, json_data):
 
     net.repulsion(node_distance=200)
 
-    html_file = f"topologyGraph/{userId}.html"
+    html_file = f"topologyGraph/{userId+topoId}.html"
     net.show(html_file)
 
     return f"http://10.20.12.148:8080/slices/{html_file}"
@@ -208,11 +230,12 @@ def get_latest_metric(worker):
 
     return jsonify({"message": "success", "data": latest_metric}), 200
 
-    
+
 def fecha_ya_vencio(fecha_definida):
     fecha_definida_dt = datetime.strptime(fecha_definida, "%Y-%m-%d %H:%M:%S")
     fecha_actual_dt = datetime.now()
     return fecha_actual_dt > fecha_definida_dt
+
 
 def validate_token(token):
     if not token:
@@ -247,4 +270,3 @@ def get_logs():
 
     except Exception as e:
         return jsonify({"message": f"Error reading log file: {str(e)}"}), 500
-
