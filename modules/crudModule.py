@@ -170,7 +170,7 @@ def save_structure_to_db(data):
 
 
 def update_graph_to_db(id, url):
-    document = db_crud.slices_draft.findOne({"_id": ObjectId(id)})
+    document = db_crud.slices_draft.find_one({"_id": ObjectId(id)})
     if document:
         document["deployment"]["details"]["graph_url"] = url
         db_crud.slices_draft.update_one({"_id": ObjectId(id)}, {"$set": document})
