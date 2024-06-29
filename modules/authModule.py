@@ -44,7 +44,7 @@ def auth_user():
     user = validate_user(username, password)
 
     if user:
-        expired_time = datetime.datetime.now() + datetime.timedelta(seconds=15)
+        expired_time = datetime.datetime.now() + datetime.timedelta(hours=1)
         token = jwt.encode(
             {
                 "_id": str(user["_id"]),
