@@ -127,7 +127,7 @@ def save_structure_to_db(data):
     data["deployment"]["details"]["created"] = datetime.now().strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-    return db_crud.slices.insert_one(data)
+    return db_crud.slices_draft.insert_one(data)
 
 
 def generate_diag(userId, json_data):
