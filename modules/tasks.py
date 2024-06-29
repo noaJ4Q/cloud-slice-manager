@@ -1,4 +1,4 @@
-from modules.celery_config import app
+from modules.celery_app import app
 from modules.openStack.openStackModule import main as openStackModule
 
 
