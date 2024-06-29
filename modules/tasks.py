@@ -1,5 +1,5 @@
-from .celery_config import app
-from .openStack.openStackModule import main as openStackModule
+from modules.celery_config import app
+from modules.openStack.openStackModule import main as openStackModule
 
 
 @app.task
