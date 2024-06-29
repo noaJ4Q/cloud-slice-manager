@@ -27,7 +27,6 @@ def db_connection():
         return None
     return slicemanager_db
 
-
 def db_connection_monitoreo():
     try:
         client = MongoClient("localhost", 27017)
@@ -36,7 +35,6 @@ def db_connection_monitoreo():
         print(f"Error durante la conexión: {e}")
         return None
     return monitoreo_db
-
 
 db_crud = db_connection()
 db = db_connection_monitoreo()
@@ -80,6 +78,7 @@ def create_slice():
         # procedimiento linux
         return jsonify({"message": "LinuxCluster deployment processed"})
 
+
 @crudModule.route("/slices/draft", methods=["POST"])
 def save_slice():
 
@@ -108,13 +107,13 @@ def gen_diag():
     if not data:
         return jsonify({"message": "Missing JSON from topology"}), 400
 
-    print(validation)
-    # url = generate_diag(decoded["_id"], data)
+    decoded = validation
+    url = generate_diag(decoded["_id"], data)
 
     return jsonify(
         {
             "message": "success",
-            # "url": url,
+            "url": url,
             "tip": "We recommend to open url in private mode to avoid loading cache.",
         }
     ) 
@@ -171,37 +170,29 @@ def generate_diag(userId, json_data):
 @crudModule.route("/monitoreo/<worker>", methods=["GET"])
 def get_latest_metric(worker):
     collection = db[worker] if db else None
+
     token = request.headers.get("Authorization")
+    validation = validate_token(token)
+    if not isinstance(validation, dict):
+        return validation
 
-    validate_token(token)
+    if not collection:
+        return jsonify({"message": "Database connection error"}), 500
 
-    try:
-        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+    latest_metrics = list(collection.find().sort("time", -1).limit(1))
+    if not latest_metrics:
+        return jsonify({"message": "No data available"}), 404
 
-        if not collection:
-            return jsonify({"message": "Database connection error"}), 500
+    latest_metric = latest_metrics[0]
+    del latest_metric["_id"]
 
-        latest_metrics = list(collection.find().sort("time", -1).limit(1))
-        if not latest_metrics:
-            return jsonify({"message": "No data available"}), 404
+    return jsonify({"message": "success", "data": latest_metric}), 200
 
-        latest_metric = latest_metrics[0]
-        del latest_metric["_id"]
-
-        return jsonify({"message": "success", "data": latest_metric}), 200
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
-    except Exception as e:
-        return jsonify({"message": f"An error occurred: {e}"}), 500
-
-
+    
 def fecha_ya_vencio(fecha_definida):
     fecha_definida_dt = datetime.strptime(fecha_definida, "%Y-%m-%d %H:%M:%S")
     fecha_actual_dt = datetime.now()
     return fecha_actual_dt > fecha_definida_dt
-
 
 def validate_token(token):
     if not token:
