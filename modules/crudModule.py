@@ -9,6 +9,7 @@ from pymongo import MongoClient, collection
 from pyvis.network import Network
 
 from .openStack.openStackModule import main as openStackModule
+from .tasks import deploy_linux_cluster, deploy_openstack
 
 logger = logging.getLogger("crudModule")
 logger.setLevel(logging.INFO)
@@ -77,8 +78,8 @@ def create_slice():
         return jsonify({"message": "Missing JSON from topology"}), 400
 
     if request.json["deployment"]["platform"] == "OpenStack":
-        logs = openStackModule(data)
-        return jsonify({"message": "OpenStack deployment processed", "logs": logs})
+        task = deploy_openstack.delay(data)
+        return jsonify({"message": "OpenStack deployment processed"})
     else:
         # procedimiento linux
         return jsonify({"message": "LinuxCluster deployment processed"})
@@ -120,9 +121,7 @@ def save_draft_slice():
     id = save_draft_to_db(data)
     url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
     if update_graph_to_db(str(id.inserted_id), url):
-        return jsonify(
-            {"message": "success", "sliceId": str(id.inserted_id)}
-        )
+        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
     else:
         return jsonify(
             {
