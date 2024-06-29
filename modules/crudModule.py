@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+import os
 
 import jwt
 from flask import Blueprint, jsonify, request, send_from_directory
@@ -210,3 +211,21 @@ def validate_token(token):
         return jsonify({"message": "Invalid token"}), 401
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
+
+
+@crudModule.route("/logs", methods=["GET"])
+def get_logs():
+    log_file_path = "/root/Proyecto/cloud-slice-manager/app.log"
+
+    if not os.path.exists(log_file_path):
+        return jsonify({"message": "Log file not found"}), 404
+
+    try:
+        with open(log_file_path, "r") as log_file:
+            logs_content = log_file.read()
+
+        return jsonify({"message": "success", "data": logs_content}), 200
+
+    except Exception as e:
+        return jsonify({"message": f"Error reading log file: {str(e)}"}), 500
+
