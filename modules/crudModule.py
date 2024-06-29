@@ -124,7 +124,13 @@ def save_draft_slice():
             {"message": "success", "sliceId": str(id.inserted_id)}
         )
     else:
-        return jsonify({"message": "Error saving graph url"}), 500
+        return jsonify(
+            {
+                "message": "success",
+                "sliceId": str(id.inserted_id),
+                "graph_url": "Server error",
+            }
+        )
 
 
 @crudModule.route("/slices/diag", methods=["POST"])
@@ -164,7 +170,7 @@ def save_draft_to_db(data):
 
 
 def update_graph_to_db(id, url):
-    document = db_crud.slices_draft.findOne({"_id": ObjectId(id)})
+    document = db_crud.slices_draft.find_one({"_id": ObjectId(id)})
     if document:
         document["deployment"]["details"]["graph_url"] = url
         db_crud.slices_draft.update_one({"_id": ObjectId(id)}, {"$set": document})
