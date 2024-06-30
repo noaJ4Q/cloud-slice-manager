@@ -45,7 +45,7 @@ db_crud = db_connection()
 db = db_connection_monitoreo()
 
 
-@crudModule.route("/users/<role>", methods=["GET"])
+@crudModule.route("/users/<role>", methods=["GET"], defaults={"role": None})
 def list_users(role):
     token = request.headers.get("Authorization")
     validation = validate_token(token)
@@ -104,7 +104,7 @@ def create_slice():
         return jsonify({"message": "LinuxCluster deployment processed"})
 
 
-@crudModule.route("/slices/draft/<slice_id>", methods=["GET"])
+@crudModule.route("/slices/draft/<slice_id>", methods=["GET"], defaults={"slice_id": None})
 def list_draft_slices(slice_id):
 
     token = request.headers.get("Authorization")
