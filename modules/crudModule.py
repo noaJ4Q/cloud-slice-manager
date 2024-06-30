@@ -45,15 +45,18 @@ db_crud = db_connection()
 db = db_connection_monitoreo()
 
 
-@crudModule.route("/users", methods=["GET"])
-def list_users():
+@crudModule.route("/users/<role>", methods=["GET"])
+def list_users(role):
     token = request.headers.get("Authorization")
     validation = validate_token(token)
     if not isinstance(validation, dict):
         return validation
 
     try:
-        users = list(db_crud.users.find( { "role": "client"} )) if db_crud else []
+        if role is None:
+            users = list(db_crud.users.find()) if db_crud else []
+        else: 
+            users = list(db_crud.users.find( { "role": role } )) if db_crud else []
         for user in users:
             user["_id"] = str(user["_id"])
         return jsonify({"message": "success", "users": users}), 200
