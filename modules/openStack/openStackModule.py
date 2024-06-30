@@ -43,6 +43,7 @@ def main(json_data):
     # ===================================================== INITIALIZATION =====================================================
     success, output = execute_bash_command(". ~/env-scripts/admin-openrc")
     if success:
+        log_info(logger, "GOOD INIT" + output)
         # ===================================================== PROJECT CREATION =====================================================
         command = (
             "openstack project create "
