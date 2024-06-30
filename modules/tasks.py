@@ -1,5 +1,8 @@
-from modules.celery_app import app
+from celery import Celery
+
 from modules.openStack.openStackModule import main as openStackModule
+
+app = Celery("tasks", broker="redis://0.0.0.0")
 
 
 @app.task
