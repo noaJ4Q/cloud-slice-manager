@@ -77,11 +77,11 @@ def main(json_data):
                     )
                     log_info(logger, logs)
                 else:
-                    log_error(logger, "FAILED ADMIN AUTHENTICATION")
+                    log_error(logger, "FAILED ADMIN AUTHENTICATION " + output)
             else:
-                log_error(logger, "FAILED ROLE ADDITION")
+                log_error(logger, "FAILED ROLE ADDITION " + output)
         else:
-            log_error(logger, "FAILED PROJECT CREATION")
+            log_error(logger, "FAILED PROJECT CREATION " + output)
     else:
         log_error(logger, "FAILED INITIALIZATION")
     log_contents = log_buffer.getvalue()
