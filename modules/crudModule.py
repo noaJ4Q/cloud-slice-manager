@@ -46,6 +46,23 @@ db_crud = db_connection()
 db = db_connection_monitoreo()
 
 
+@crudModule.route("/users", methods=["GET"])
+def list_users():
+    token = request.headers.get("Authorization")
+    validation = validate_token(token)
+    if not isinstance(validation, dict):
+        return validation
+
+    try:
+        users = list(db_crud.users.find( { "role": "client"} )) if db_crud else []
+        for user in users:
+            user["_id"] = str(user["_id"])
+        return jsonify({"message": "success", "users": users}), 200
+
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+
+
 @crudModule.route("/slices", methods=["GET"])
 def list_slices():
 
@@ -118,7 +135,7 @@ def save_draft_slice():
 
     decoded = validation
 
-    id = save_draft_to_db(data)
+    id = save_draft_to_db(data, decoded)
     url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
     if update_graph_to_db(str(id.inserted_id), url):
         return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
@@ -161,7 +178,8 @@ def serve_graph(filename):
     return send_from_directory("topologyGraph", filename)
 
 
-def save_draft_to_db(data):
+def save_draft_to_db(data, decoded_token):
+    data["manager"] = decoded_token["_id"]
     data["deployment"]["details"]["created"] = datetime.now().strftime(
         "%Y-%m-%d %H:%M:%S"
     )
