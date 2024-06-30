@@ -68,6 +68,7 @@ def list_users(role):
 
 
 @crudModule.route("/slices", methods=["GET"])
+@crudModule.route("/slices/client", methods=["GET"])
 def list_slices():
 
     token = request.headers.get("Authorization")
@@ -77,7 +78,14 @@ def list_slices():
 
     try:
 
-        slices = list(db_crud.deployed_slices.find()) if db_crud else []  # FIND SLICES
+        decoded = validation
+
+        if request.path == "/slices/client":
+            slices = list(db_crud.deployed_slices.find({"client": decoded["_id"]})) if db_crud else []  # FIND SLICES BY CLIENT
+            print('id of user in token:', decoded["_id"])
+        else:
+            slices = list(db_crud.deployed_slices.find()) if db_crud else []  # FIND SLICES
+
         for slice in slices:
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
