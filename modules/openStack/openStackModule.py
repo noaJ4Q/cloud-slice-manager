@@ -2,6 +2,7 @@ import io
 import logging
 
 import requests
+from dotenv import load_dotenv
 
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import (
@@ -41,6 +42,7 @@ ADMIN_PROJECT_NAME = "admin"
 def main(json_data):
     log_info(logger, "Inicio de la operación de OpenStack")
     # ===================================================== INITIALIZATION =====================================================
+    load_dotenv()
     success, output = execute_bash_command(". ~/env-scripts/admin-openrc")
     if success:
         # ===================================================== PROJECT CREATION =====================================================
@@ -77,11 +79,11 @@ def main(json_data):
                     )
                     log_info(logger, logs)
                 else:
-                    log_error(logger, "FAILED ADMIN AUTHENTICATION")
+                    log_error(logger, "FAILED ADMIN AUTHENTICATION " + output)
             else:
-                log_error(logger, "FAILED ROLE ADDITION")
+                log_error(logger, "FAILED ROLE ADDITION " + output)
         else:
-            log_error(logger, "FAILED PROJECT CREATION")
+            log_error(logger, "FAILED PROJECT CREATION " + output)
     else:
         log_error(logger, "FAILED INITIALIZATION")
     log_contents = log_buffer.getvalue()
