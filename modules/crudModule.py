@@ -45,13 +45,15 @@ db_crud = db_connection()
 db = db_connection_monitoreo()
 
 
-@crudModule.route("/users/<role>", methods=["GET"], defaults={"role": None})
+@crudModule.route("/users", methods=["GET"], defaults={"role": None})
+@crudModule.route("/users/<role>")
 def list_users(role):
     token = request.headers.get("Authorization")
     validation = validate_token(token)
     if not isinstance(validation, dict):
         return validation
 
+    print(role)
     try:
         if role is None:
             users = list(db_crud.users.find()) if db_crud else []
@@ -104,7 +106,8 @@ def create_slice():
         return jsonify({"message": "LinuxCluster deployment processed"})
 
 
-@crudModule.route("/slices/draft/<slice_id>", methods=["GET"], defaults={"slice_id": None})
+@crudModule.route("/slices/draft", methods=["GET"], defaults={"slice_id": None})
+@crudModule.route("/slices/draft/<slice_id>")
 def list_draft_slices(slice_id):
 
     token = request.headers.get("Authorization")
@@ -120,6 +123,7 @@ def list_draft_slices(slice_id):
             return jsonify({"message": "success", "slices": slices}), 200
         else:
             slice = db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)}) if db_crud else {}
+            slice["_id"] = str(slice["_id"])
             return jsonify({"message": "success", "slice": slice}), 200
             
     except Exception as e:
