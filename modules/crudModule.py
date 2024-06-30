@@ -7,9 +7,9 @@ from bson import ObjectId
 from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import MongoClient, collection
 from pyvis.network import Network
-from tasks import deploy_linux_cluster, deploy_openstack
 
 from .openStack.openStackModule import main as openStackModule
+from .tasks import deploy_linux_cluster, deploy_openstack
 
 logger = logging.getLogger("crudModule")
 logger.setLevel(logging.INFO)
