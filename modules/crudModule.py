@@ -114,14 +114,14 @@ def list_draft_slices(slice_id):
 
     try:
         if slice_id is None:
-            slice = db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)}) if db_crud else {}
-            return jsonify({"message": "success", "slice": slice}), 200
-        else:
             slices = list(db_crud.slices_draft.find()) if db_crud else []
             for slice in slices:
                 slice["_id"] = str(slice["_id"])
             return jsonify({"message": "success", "slices": slices}), 200
-
+        else:
+            slice = db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)}) if db_crud else {}
+            return jsonify({"message": "success", "slice": slice}), 200
+            
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
 
