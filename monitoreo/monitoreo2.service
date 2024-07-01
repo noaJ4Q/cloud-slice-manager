@@ -3,7 +3,7 @@ Description=Monitoreo 2 Service
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /root/monitoreo/server2.py
+ExecStart=/usr/bin/python3 /root/Proyecto/cloud-slice-manager/monitoreo/server2.py
 Restart=always
 User=root
 Group=root

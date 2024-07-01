@@ -197,19 +197,41 @@ def save_draft_slice():
 
     decoded = validation
 
-    id = save_draft_to_db(data, decoded)
-    url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
-    if update_graph_to_db(str(id.inserted_id), url):
-        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
+    if "_id" in data:
+        id = data["_id"]
+        update_draft_to_db(data) 
+        url = generate_diag(decoded["_id"], id, data["structure"])
+        if update_graph_to_db(id, url):
+            return jsonify({"message": "success", "sliceId": id})
+        else:
+            return jsonify(
+                {
+                    "message": "success",
+                    "sliceId": id,
+                    "graph_url": "Server error",
+                }
+            )
     else:
-        return jsonify(
-            {
-                "message": "success",
-                "sliceId": str(id.inserted_id),
-                "graph_url": "Server error",
-            }
-        )
+        id = save_draft_to_db(data, decoded)
+        url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
+        if update_graph_to_db(str(id.inserted_id), url):
+            return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
+        else:
+            return jsonify(
+                {
+                    "message": "success",
+                    "sliceId": str(id.inserted_id),
+                    "graph_url": "Server error",
+                }
+            )
 
+
+def update_draft_to_db(data):
+    document = db_crud.slices_draft.find_one({"_id": ObjectId(data["_id"])})
+    if document:
+        db_crud.slices_draft.update_one({"_id": ObjectId(data["_id"])}, {"$set": data})
+        return True
+    return False
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():
