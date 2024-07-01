@@ -62,7 +62,7 @@ def get_token_for_admin():
         return None
 
 
-def main(json_data):
+def main(json_data, decoded):
     log_info(logger, "Inicio de la operación de OpenStack")
     # ===================================================== INITIALIZATION =====================================================
     success, output = execute_bash_command(". ~/env-scripts/admin-openrc")
@@ -104,7 +104,7 @@ def main(json_data):
                     log_info(logger, "SUCCESSFUL ADMIN AUTHENTICATION")
                     admin_token = resp1.headers["X-Subject-Token"]
                     logs = admin_token_for_project(
-                        admin_token=admin_token, json_data=json_data
+                        admin_token=admin_token, json_data=json_data, decoded=decoded
                     )
                     log_info(logger, logs)
                 else:

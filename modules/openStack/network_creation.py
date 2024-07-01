@@ -17,7 +17,7 @@ NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"
 DOMAIN_ID = "default"
 
 
-def main(token_for_project, json_data):
+def main(token_for_project, json_data, decoded):
     log_info(logger, "Creando red")
     network_name = json_data["deployment"]["details"]["network_name"]
     resp3 = create_network(NEUTRON_ENDPOINT, token_for_project, network_name)
@@ -29,6 +29,7 @@ def main(token_for_project, json_data):
             token_for_project=token_for_project,
             network_id=network_id,
             json_data=json_data,
+            decoded=decoded,
         )
         log_info(logger, logs)
     else:
