@@ -78,7 +78,8 @@ def main(json_data):
             admin_token,
             DOMAIN_ID,
             json_data["deployment"]["details"]["project_name"],
-            json_data["deployment"]["details"]["project_desc"],
+            "Proyecto creado para "
+            + json_data["deployment"]["details"]["project_name"],
         )
 
         if resp0.status_code == 201:
