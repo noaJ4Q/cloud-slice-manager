@@ -11,6 +11,7 @@ from .openstack_sdk import (
     execute_bash_command,
     log_error,
     log_info,
+    password_authentication_with_scoped_authorization,
     password_authentication_with_scoped_authorization_va,
 )
 
