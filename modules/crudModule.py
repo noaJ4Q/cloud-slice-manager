@@ -121,19 +121,6 @@ def create_slice():
 
     decoded = validation
 
-    id = save_draft_to_db(data, decoded)
-    url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
-    if update_graph_to_db(str(id.inserted_id), url):
-        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
-    else:
-        return jsonify(
-            {
-                "message": "success",
-                "sliceId": str(id.inserted_id),
-                "graph_url": "Server error",
-            }
-        )
-
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing JSON from topology"}), 400
