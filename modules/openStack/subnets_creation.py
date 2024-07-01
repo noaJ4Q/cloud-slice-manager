@@ -84,7 +84,7 @@ def save_draft_to_db(data, decoded_token):
 
 
 def update_graph_to_db(id, url):
-    document = db_crud.slices_draft.find_one({"_id": ObjectId(id)})
+    document = db_crud.deployed_slices.find_one({"_id": ObjectId(id)})
     if document:
         document["deployment"]["details"]["graph_url"] = url
         db_crud.deployed_slices.update_one({"_id": ObjectId(id)}, {"$set": document})
