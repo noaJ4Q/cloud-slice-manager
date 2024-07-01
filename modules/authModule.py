@@ -60,7 +60,7 @@ def auth_user():
         logger.warning(f"Nombre de usuario o contraseña inválidos para el usuario: {username}")
         return jsonify({"message": "Invalid username or password"}), 401
 
-
+@authModule.route("/users", methods=["POST"])
 def create_user():
     data = request.get_json()
     username = data.get("username")
