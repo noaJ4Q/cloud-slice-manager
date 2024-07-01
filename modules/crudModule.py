@@ -72,7 +72,7 @@ def list_client_slices():
 @crudModule.route("/users/<role>")
 def list_users(role):
     token = request.headers.get("Authorization")
-    validation = validate_token(token, "manager")
+    validation = validate_token(token, "admin")
     if not isinstance(validation, dict):
         return validation
 
