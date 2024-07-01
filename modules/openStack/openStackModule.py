@@ -155,7 +155,7 @@ def eliminate_topology(project_id):
     if r1.status_code == 200:
         instances = r1.json()["servers"]
     else:
-        log_error(logger, f"Error buscando instancias: {r1.status_code + r1.json()}")
+        log_error(logger, f"Error buscando instancias: {r1.status_code, r1.json()}")
         return None
     for ins in instances:
         ins_id = ins["id"]
