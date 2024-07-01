@@ -126,7 +126,7 @@ def create_slice():
         return jsonify({"message": "Missing JSON from topology"}), 400
 
     if request.json["deployment"]["platform"] == "OpenStack":
-        task = deploy_openstack.delay(data)
+        task = deploy_openstack.delay(data, decoded)
         return jsonify({"message": "OpenStack deployment processed"})
     else:
         # procedimiento linux
