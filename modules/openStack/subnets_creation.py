@@ -58,7 +58,7 @@ def generate_diag(userId, topoId, json_data):
     html_file = f"topologyGraph/{userId+topoId}.html"
     net.show(html_file)
 
-    return f"http://10.20.12.148:8080/slices/{html_file}"
+    return f"http://10.20.12.153:8080/slices/{html_file}"
 
 
 def save_draft_to_db(data, decoded_token):
