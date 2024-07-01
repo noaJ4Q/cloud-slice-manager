@@ -133,6 +133,29 @@ def create_slice():
         return jsonify({"message": "LinuxCluster deployment processed"})
 
 
+@crudModule.route("/slices/delete/<slice_id>", methods=["POST"])
+def delete_slice(slice_id):
+
+    token = request.headers.get("Authorization")
+    validation = validate_token(token, "manager")
+    if not isinstance(validation, dict):
+        return validation
+
+    # buscar ID en la base de datos
+    collection = db_crud.deployed_slices if db_crud else None
+    if not collection:
+        return jsonify({"message": "Database connection error"}), 500
+
+    slice = collection.find_one({"_id": ObjectId(slice_id)})
+
+    if not slice:
+        return jsonify({"message": "Slice not found"}), 404
+
+    # eliminar slice usando task de celery
+    task = delete_openstack.delay(slice_id)
+    return jsonify({"message": "Slice deletion processed"})
+
+
 @crudModule.route("/slices/draft", methods=["GET"], defaults={"slice_id": None})
 @crudModule.route("/slices/draft/<slice_id>")
 def list_draft_slices(slice_id):
