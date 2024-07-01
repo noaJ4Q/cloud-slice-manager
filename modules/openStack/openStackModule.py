@@ -149,6 +149,7 @@ def main(json_data, decoded):
 def eliminate_topology(project_id):
     log_info(logger, "Inicio de la eliminación de OpenStack")
     token_for_project = get_token_for_admin_in_project(project_id)
+    log_info(logger, token_for_project)
 
     log_info(logger, "Buscando instancias")
     r1 = list_instances(NOVA_ENDPOINT, token_for_project, project_id)
