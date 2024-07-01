@@ -197,6 +197,9 @@ def save_draft_slice():
 
     decoded = validation
 
+    print(data) 
+    return jsonify({"message": "success"}), 200
+
     id = save_draft_to_db(data, decoded)
     url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
     if update_graph_to_db(str(id.inserted_id), url):
