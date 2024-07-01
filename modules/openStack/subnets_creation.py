@@ -37,7 +37,7 @@ def main(token_for_project, network_id, json_data):
         project_id = subnet_created["subnet"]["project_id"]
 
         ports = {}
-        for edge_id, edge_info in json_data["visjs"]["edges"].items():
+        for edge_id, edge_info in json_data["structure"]["visjs"]["edges"].items():
             logs = ports_creation(
                 token_for_project=token_for_project,
                 network_id=network_id,
@@ -47,7 +47,7 @@ def main(token_for_project, network_id, json_data):
                 edge_id=edge_id,
             )
             log_info(logger, logs)
-        for node_id, node_info in json_data["metadata"]["nodes"].items():
+        for node_id, node_info in json_data["structure"]["metadata"]["nodes"].items():
             logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
