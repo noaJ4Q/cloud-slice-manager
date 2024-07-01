@@ -99,6 +99,7 @@ def get_console_url_per_instance(instance_id):
         remote_url = r.json()["remote_console"]["url"]
         # REPLACE
         remote_url = remote_url.replace("controller:6080", "10.20.12.153:6080")
+        print(r.json())
         return remote_url
     else:
         return None
