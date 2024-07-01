@@ -50,6 +50,6 @@ def main(token_for_project, node_id, ports, json_data):
         instance_created = resp.json()
         print(json.dumps(instance_created))
     else:
-        log_error(logger, f"FAILED INSTANCE CREATION: {resp.status_code}")
+        log_error(logger, f"FAILED INSTANCE CREATION: {resp.status_code} {resp.json}")
     logs_contents = log_buffer.getvalue()
     return logs_contents
