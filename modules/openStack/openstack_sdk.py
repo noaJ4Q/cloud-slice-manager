@@ -94,7 +94,7 @@ def password_authentication_with_scoped_authorization_va(
 
 
 def get_server_console(token, server_id):
-    url = "http://10.20.12.153:8774/v2.1" + "/servers/" + server_id + "/remote-consoles"
+    url = "http://127.0.0.1:8774/v2.1" + "/servers/" + server_id + "/remote-consoles"
     headers = {
         "Content-type": "application/json",
         "X-Auth-Token": token,
