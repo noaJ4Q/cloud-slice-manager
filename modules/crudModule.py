@@ -8,8 +8,7 @@ from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import MongoClient, collection
 from pyvis.network import Network
 
-from .openStack.openStackModule import main as openStackModule
-from .tasks import deploy_linux_cluster, deploy_openstack
+from .tasks import delete_openstack, deploy_linux_cluster, deploy_openstack
 
 logger = logging.getLogger("crudModule")
 logger.setLevel(logging.INFO)
@@ -121,29 +120,39 @@ def create_slice():
 
     decoded = validation
 
-    id = save_draft_to_db(data, decoded)
-    url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
-    if update_graph_to_db(str(id.inserted_id), url):
-        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
-    else:
-        return jsonify(
-            {
-                "message": "success",
-                "sliceId": str(id.inserted_id),
-                "graph_url": "Server error",
-            }
-        )
-
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing JSON from topology"}), 400
 
     if request.json["deployment"]["platform"] == "OpenStack":
-        task = deploy_openstack.delay(data)
+        task = deploy_openstack.delay(data, decoded)
         return jsonify({"message": "OpenStack deployment processed"})
     else:
         # procedimiento linux
         return jsonify({"message": "LinuxCluster deployment processed"})
+
+
+@crudModule.route("/slices/delete/<slice_id>", methods=["POST"])
+def delete_slice(slice_id):
+
+    token = request.headers.get("Authorization")
+    validation = validate_token(token, "manager")
+    if not isinstance(validation, dict):
+        return validation
+
+    # buscar ID en la base de datos
+    collection = db_crud.deployed_slices if db_crud else None
+    if not collection:
+        return jsonify({"message": "Database connection error"}), 500
+
+    slice = collection.find_one({"_id": ObjectId(slice_id)})
+
+    if not slice:
+        return jsonify({"message": "Slice not found"}), 404
+
+    # eliminar slice usando task de celery
+    task = delete_openstack.delay(slice_id)
+    return jsonify({"message": "Slice deletion processed"})
 
 
 @crudModule.route("/slices/draft", methods=["GET"], defaults={"slice_id": None})
