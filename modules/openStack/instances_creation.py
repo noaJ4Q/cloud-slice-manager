@@ -48,8 +48,7 @@ def main(token_for_project, node_id, ports, json_data):
     if resp.status_code == 202:
         log_info(logger, "INSTANCE CREATED SUCCESSFULLY")
         instance_created = resp.json()
-        instance_created_dict = json.loads(instance_created)
-        instance_id = instance_created_dict.get("server").get("id")
+        instance_id = instance_created.get("server").get("id")
         # save url in json_data
         log_info(
             logger,
