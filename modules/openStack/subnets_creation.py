@@ -2,6 +2,7 @@ import io
 import json
 import logging
 
+from .crudModule import generate_diag, save_draft_to_db, update_graph_to_db
 from .instances_creation import main as instances_creation
 from .openstack_sdk import create_subnet, log_error, log_info
 from .ports_creation import main as ports_creation
@@ -19,7 +20,7 @@ DOMAIN_ID = "default"
 # DATA
 
 
-def main(token_for_project, network_id, json_data):
+def main(token_for_project, network_id, json_data, decoded):
     log_info(logger, "Creando subred")
     details = json_data["deployment"]["details"]
     resp = create_subnet(
@@ -37,7 +38,7 @@ def main(token_for_project, network_id, json_data):
         project_id = subnet_created["subnet"]["project_id"]
 
         ports = {}
-        for edge_id, edge_info in json_data["visjs"]["edges"].items():
+        for edge_id, edge_info in json_data["structure"]["visjs"]["edges"].items():
             logs = ports_creation(
                 token_for_project=token_for_project,
                 network_id=network_id,
@@ -47,7 +48,7 @@ def main(token_for_project, network_id, json_data):
                 edge_id=edge_id,
             )
             log_info(logger, logs)
-        for node_id, node_info in json_data["metadata"]["nodes"].items():
+        for node_id, node_info in json_data["structure"]["metadata"]["nodes"].items():
             logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
@@ -55,6 +56,13 @@ def main(token_for_project, network_id, json_data):
                 json_data=json_data,
             )
             log_info(logger, logs1)
+
+        id = save_draft_to_db(json_data, decoded)
+        url = generate_diag(decoded["_id"], str(id.inserted_id), json_data["structure"])
+        if update_graph_to_db(str(id.inserted_id), url):
+            log_info(logger, "DATA SAVED IN DB")
+        else:
+            log_error(logger, "SERVER ERROR SAVING DATA IN DB")
 
     else:
         log_error(logger, "FAILED SUBNET CREATION")

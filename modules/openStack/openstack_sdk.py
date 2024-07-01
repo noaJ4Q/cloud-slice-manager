@@ -67,6 +67,32 @@ def password_authentication_with_scoped_authorization(
     return r
 
 
+def password_authentication_with_scoped_authorization_va(
+    auth_endpoint, user_id, password, domain_id, project_id
+):
+    url = auth_endpoint + "/auth/tokens"
+
+    data = {
+        "auth": {
+            "identity": {
+                "methods": ["password"],
+                "password": {
+                    "user": {
+                        "id": user_id,
+                        "domain": {"id": domain_id},
+                        "password": password,
+                    }
+                },
+            },
+            "scope": {"project": {"domain": {"id": domain_id}, "id": project_id}},
+        }
+    }
+
+    r = requests.post(url=url, data=json.dumps(data))
+    # status_code success = 201
+    return r
+
+
 def assign_role_to_user(auth_endpoint, token, project_id, user_id, role_id):
     url = (
         auth_endpoint

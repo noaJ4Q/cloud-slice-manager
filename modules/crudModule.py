@@ -46,18 +46,43 @@ db_crud = db_connection()
 db = db_connection_monitoreo()
 
 
-@crudModule.route("/users/<role>", methods=["GET"])
-def list_users(role):
+# ONLY FOR CLIENT REQUESTS
+@crudModule.route("/slices/client", methods=["GET"])
+def list_client_slices():
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "client")
     if not isinstance(validation, dict):
         return validation
 
     try:
+        decoded = validation
+        slices = (
+            list(db_crud.deployed_slices.find({"client": decoded["_id"]}))
+            if db_crud
+            else []
+        )
+        for slice in slices:
+            slice["_id"] = str(slice["_id"])
+        return jsonify({"message": "success", "slices": slices}), 200
+
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
+
+
+@crudModule.route("/users", methods=["GET"], defaults={"role": None})
+@crudModule.route("/users/<role>")
+def list_users(role):
+    token = request.headers.get("Authorization")
+    validation = validate_token(token, "manager")
+    if not isinstance(validation, dict):
+        return validation
+
+    print(role)
+    try:
         if role is None:
             users = list(db_crud.users.find()) if db_crud else []
-        else: 
-            users = list(db_crud.users.find( { "role": role } )) if db_crud else []
+        else:
+            users = list(db_crud.users.find({"role": role})) if db_crud else []
         for user in users:
             user["_id"] = str(user["_id"])
         return jsonify({"message": "success", "users": users}), 200
@@ -67,10 +92,11 @@ def list_users(role):
 
 
 @crudModule.route("/slices", methods=["GET"])
+@crudModule.route("/slices/client", methods=["GET"])
 def list_slices():
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
 
@@ -89,9 +115,24 @@ def list_slices():
 def create_slice():
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
+
+    decoded = validation
+
+    id = save_draft_to_db(data, decoded)
+    url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
+    if update_graph_to_db(str(id.inserted_id), url):
+        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
+    else:
+        return jsonify(
+            {
+                "message": "success",
+                "sliceId": str(id.inserted_id),
+                "graph_url": "Server error",
+            }
+        )
 
     data = request.get_json()
     if not data:
@@ -105,20 +146,29 @@ def create_slice():
         return jsonify({"message": "LinuxCluster deployment processed"})
 
 
-@crudModule.route("/slices/draft", methods=["GET"])
-def list_draft_slices():
+@crudModule.route("/slices/draft", methods=["GET"], defaults={"slice_id": None})
+@crudModule.route("/slices/draft/<slice_id>")
+def list_draft_slices(slice_id):
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
 
     try:
-
-        slices = list(db_crud.slices_draft.find()) if db_crud else []
-        for slice in slices:
+        if slice_id is None:
+            slices = list(db_crud.slices_draft.find()) if db_crud else []
+            for slice in slices:
+                slice["_id"] = str(slice["_id"])
+            return jsonify({"message": "success", "slices": slices}), 200
+        else:
+            slice = (
+                db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)})
+                if db_crud
+                else {}
+            )
             slice["_id"] = str(slice["_id"])
-        return jsonify({"message": "success", "slices": slices}), 200
+            return jsonify({"message": "success", "slice": slice}), 200
 
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
@@ -128,7 +178,7 @@ def list_draft_slices():
 def save_draft_slice():
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
 
@@ -156,7 +206,7 @@ def save_draft_slice():
 def gen_diag():
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
 
@@ -240,7 +290,7 @@ def get_latest_metric(worker):
     collection = db[worker] if db else None
 
     token = request.headers.get("Authorization")
-    validation = validate_token(token)
+    validation = validate_token(token, "manager")
     if not isinstance(validation, dict):
         return validation
 
@@ -263,14 +313,14 @@ def fecha_ya_vencio(fecha_definida):
     return fecha_actual_dt > fecha_definida_dt
 
 
-def validate_token(token):
+def validate_token(token, role):
     if not token:
         return jsonify({"message": "Missing token"}), 401
     try:
         decoded = jwt.decode(token, "secret", algorithms=["HS256"])
         if fecha_ya_vencio(decoded["expired"]):
             return jsonify({"message": "Token expired"}), 411
-        if decoded["role"] != "manager":
+        if decoded["role"] != role:
             return jsonify({"message": "Unauthorized access"}), 401
         return decoded
     except jwt.ExpiredSignatureError:
