@@ -11,7 +11,7 @@ from .openstack_sdk import (
     execute_bash_command,
     log_error,
     log_info,
-    password_authentication_with_scoped_authorization,
+    password_authentication_with_scoped_authorization_va,
 )
 
 
@@ -48,7 +48,7 @@ EXTERNAL_NETWORK_ID = "22d83117-7126-41d4-acaf-e7e815d04bfd"
 
 
 def get_token_for_admin():
-    r = password_authentication_with_scoped_authorization(
+    r = password_authentication_with_scoped_authorization_va(
         KEYSTONE_ENDPOINT,
         ADMIN_USER_ID,
         ADMIN_USER_PASSWORD,
