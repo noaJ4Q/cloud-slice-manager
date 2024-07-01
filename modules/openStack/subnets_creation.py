@@ -92,33 +92,6 @@ def update_graph_to_db(id, url):
     return False
 
 
-def get_console_url_per_instance(instance_id):
-    admin_token = get_token_for_admin()
-    r = get_server_console(admin_token, instance_id)
-    if r.status_code == 200:
-        remote_url = r.json()["remote_console"]["url"]
-        # REPLACE
-        remote_url = remote_url.replace("controller:6080", "10.20.12.153:6080")
-        print(r.json())
-        return remote_url
-    else:
-        return None
-
-
-def get_token_for_admin():
-    r = password_authentication_with_scoped_authorization_va(
-        KEYSTONE_ENDPOINT,
-        ADMIN_USER_ID,
-        ADMIN_USER_PASSWORD,
-        DOMAIN_ID,
-        ADMIN_PROJECT_ID,
-    )
-    if r.status_code == 201:
-        return r.headers["X-Subject-Token"]
-    else:
-        return None
-
-
 def db_connection():
     try:
         client = MongoClient("localhost", 27017)
@@ -161,18 +134,12 @@ def main(token_for_project, network_id, json_data, decoded):
             )
             log_info(logger, logs)
         for node_id, node_info in json_data["structure"]["metadata"]["nodes"].items():
-            instance_id, logs1 = instances_creation(
+            logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
                 ports=ports,
                 json_data=json_data,
             )
-
-            # find url and save in db
-            url = get_console_url_per_instance(instance_id)
-
-            # save in json_data
-            json_data["structure"]["metadata"]["nodes"][node_id]["console_url"] = url
 
             log_info(logger, logs1)
 
