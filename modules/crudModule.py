@@ -197,7 +197,10 @@ def save_draft_slice():
 
     decoded = validation
 
-    print(data) 
+    if "_id" in data:
+        print("actualizar")
+    else:
+        print("nuevo")
     return jsonify({"message": "success"}), 200
 
     id = save_draft_to_db(data, decoded)
