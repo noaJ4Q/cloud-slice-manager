@@ -8,7 +8,13 @@ from pymongo import MongoClient, collection
 from pyvis.network import Network
 
 from .instances_creation import main as instances_creation
-from .openstack_sdk import create_subnet, log_error, log_info
+from .openstack_sdk import (
+    create_subnet,
+    get_server_console,
+    log_error,
+    log_info,
+    password_authentication_with_scoped_authorization_va,
+)
 from .ports_creation import main as ports_creation
 
 log_buffer = io.StringIO()
@@ -19,6 +25,13 @@ logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 NEUTRON_ENDPOINT = "http://127.0.0.1:9696/v2.0"
+NOVA_ENDPOINT = "http://127.0.0.1:8774/v2.1"
+KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
+ADMIN_USER_ID = "d95ef81dc2374f939b6800c44a97743f"
+ADMIN_USER_PASSWORD = "7c80c0fc17c122fa228c4d3aea5c12c0"
+ADMIN_PROJECT_ID = "400106fa8b724626ace6be4ddfbc1787"
+
+
 # CREDENTIALS
 DOMAIN_ID = "default"
 # DATA
@@ -79,6 +92,32 @@ def update_graph_to_db(id, url):
     return False
 
 
+def get_console_url_per_instance(instance_id):
+    admin_token = get_token_for_admin()
+    r = get_server_console(admin_token, instance_id)
+    if r.status_code == 200:
+        remote_url = r.json()["remote_console"]["url"]
+        # REPLACE
+        remote_url = remote_url.replace("controller:6080", "10.20.12.153:6080")
+        return remote_url
+    else:
+        return None
+
+
+def get_token_for_admin():
+    r = password_authentication_with_scoped_authorization_va(
+        KEYSTONE_ENDPOINT,
+        ADMIN_USER_ID,
+        ADMIN_USER_PASSWORD,
+        DOMAIN_ID,
+        ADMIN_PROJECT_ID,
+    )
+    if r.status_code == 201:
+        return r.headers["X-Subject-Token"]
+    else:
+        return None
+
+
 def db_connection():
     try:
         client = MongoClient("localhost", 27017)
@@ -127,6 +166,13 @@ def main(token_for_project, network_id, json_data, decoded):
                 ports=ports,
                 json_data=json_data,
             )
+
+            # find url and save in db
+            url = get_console_url_per_instance(instance_id=logs1["instance_id"])
+
+            # save in json_data
+            json_data["structure"]["metadata"]["nodes"][node_id]["console_url"] = url
+
             log_info(logger, logs1)
 
         id = save_draft_to_db(json_data, decoded)

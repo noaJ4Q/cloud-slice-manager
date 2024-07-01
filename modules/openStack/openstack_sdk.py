@@ -93,6 +93,21 @@ def password_authentication_with_scoped_authorization_va(
     return r
 
 
+def get_server_console(token, server_id):
+    url = "10.20.12.153:8774" + "/servers/" + server_id + "/remote-consoles"
+    headers = {
+        "Content-type": "application/json",
+        "X-Auth-Token": token,
+        "OpenStack-API-Version": "compute v2.1",
+    }
+
+    data = {"remote_console": {"protocol": "vnc", "type": "novnc"}}
+
+    r = requests.post(url=url, headers=headers, data=json.dumps(data))
+    # status_code success = 200
+    return r
+
+
 def assign_role_to_user(auth_endpoint, token, project_id, user_id, role_id):
     url = (
         auth_endpoint
