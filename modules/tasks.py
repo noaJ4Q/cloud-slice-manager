@@ -6,8 +6,8 @@ app = Celery("tasks", broker="redis://:headnode@0.0.0.0")
 
 
 @app.task
-def deploy_openstack(data):
-    return openStackModule(data)
+def deploy_openstack(data, decoded):
+    return openStackModule(data, decoded)
 
 
 @app.task
