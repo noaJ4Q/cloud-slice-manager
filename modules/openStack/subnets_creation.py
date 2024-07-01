@@ -1,6 +1,11 @@
 import io
 import json
 import logging
+from datetime import datetime
+
+from bson import ObjectId
+from pymongo import MongoClient, collection
+from pyvis.network import Network
 
 from .instances_creation import main as instances_creation
 from .openstack_sdk import create_subnet, log_error, log_info
@@ -19,7 +24,74 @@ DOMAIN_ID = "default"
 # DATA
 
 
-def main(token_for_project, network_id, json_data):
+def generate_diag(userId, topoId, json_data):
+    net = Network(notebook=True)
+
+    nodes = json_data.get("visjs", {}).get("nodes", {})
+    edges = json_data.get("visjs", {}).get("edges", {})
+    edge_node_mapping = json_data.get("metadata", {}).get("edge_node_mapping", {})
+
+    for node_id, node_info in nodes.items():
+        net.add_node(node_id, label=node_info["label"], shape="circle")
+
+    for from_node, edge_ids in edge_node_mapping.items():
+        for edge_id in edge_ids:
+            edge_info = edges.get(edge_id, {})
+            to_node = next(
+                (
+                    n_id
+                    for n_id, e_list in edge_node_mapping.items()
+                    if edge_id in e_list and n_id != from_node
+                ),
+                None,
+            )
+            if to_node:
+                net.add_edge(
+                    from_node,
+                    to_node,
+                    label=edge_info.get("label", ""),
+                    color=edge_info.get("color", ""),
+                )
+
+    net.repulsion(node_distance=200)
+
+    html_file = f"topologyGraph/{userId+topoId}.html"
+    net.show(html_file)
+
+    return f"http://10.20.12.148:8080/slices/{html_file}"
+
+
+def save_draft_to_db(data, decoded_token):
+    data["manager"] = decoded_token["_id"]
+    data["deployment"]["details"]["created"] = datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    return db_crud.slices_draft.insert_one(data)
+
+
+def update_graph_to_db(id, url):
+    document = db_crud.slices_draft.find_one({"_id": ObjectId(id)})
+    if document:
+        document["deployment"]["details"]["graph_url"] = url
+        db_crud.slices_draft.update_one({"_id": ObjectId(id)}, {"$set": document})
+        return True
+    return False
+
+
+def db_connection():
+    try:
+        client = MongoClient("localhost", 27017)
+        slicemanager_db = client["slicemanager_db"]
+    except Exception as e:
+        print(f"Error durante la conexión: {e}")
+        return None
+    return slicemanager_db
+
+
+db_crud = db_connection()
+
+
+def main(token_for_project, network_id, json_data, decoded):
     log_info(logger, "Creando subred")
     details = json_data["deployment"]["details"]
     resp = create_subnet(
@@ -37,7 +109,7 @@ def main(token_for_project, network_id, json_data):
         project_id = subnet_created["subnet"]["project_id"]
 
         ports = {}
-        for edge_id, edge_info in json_data["visjs"]["edges"].items():
+        for edge_id, edge_info in json_data["structure"]["visjs"]["edges"].items():
             logs = ports_creation(
                 token_for_project=token_for_project,
                 network_id=network_id,
@@ -47,7 +119,7 @@ def main(token_for_project, network_id, json_data):
                 edge_id=edge_id,
             )
             log_info(logger, logs)
-        for node_id, node_info in json_data["metadata"]["nodes"].items():
+        for node_id, node_info in json_data["structure"]["metadata"]["nodes"].items():
             logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
@@ -55,6 +127,13 @@ def main(token_for_project, network_id, json_data):
                 json_data=json_data,
             )
             log_info(logger, logs1)
+
+        id = save_draft_to_db(json_data, decoded)
+        url = generate_diag(decoded["_id"], str(id.inserted_id), json_data["structure"])
+        if update_graph_to_db(str(id.inserted_id), url):
+            log_info(logger, "DATA SAVED IN DB")
+        else:
+            log_error(logger, "SERVER ERROR SAVING DATA IN DB")
 
     else:
         log_error(logger, "FAILED SUBNET CREATION")

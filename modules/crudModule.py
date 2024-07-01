@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, request, send_from_directory
 from pymongo import MongoClient, collection
 from pyvis.network import Network
 
-from .openStack.openStackModule import main as openStackModule
+from .tasks import delete_openstack, deploy_linux_cluster, deploy_openstack
 
 logger = logging.getLogger("crudModule")
 logger.setLevel(logging.INFO)
@@ -55,7 +55,11 @@ def list_client_slices():
 
     try:
         decoded = validation
-        slices = list(db_crud.deployed_slices.find({"client": decoded["_id"]})) if db_crud else []
+        slices = (
+            list(db_crud.deployed_slices.find({"client": decoded["_id"]}))
+            if db_crud
+            else []
+        )
         for slice in slices:
             slice["_id"] = str(slice["_id"])
         return jsonify({"message": "success", "slices": slices}), 200
@@ -76,8 +80,8 @@ def list_users(role):
     try:
         if role is None:
             users = list(db_crud.users.find()) if db_crud else []
-        else: 
-            users = list(db_crud.users.find( { "role": role } )) if db_crud else []
+        else:
+            users = list(db_crud.users.find({"role": role})) if db_crud else []
         for user in users:
             user["_id"] = str(user["_id"])
         return jsonify({"message": "success", "users": users}), 200
@@ -114,16 +118,41 @@ def create_slice():
     if not isinstance(validation, dict):
         return validation
 
+    decoded = validation
+
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing JSON from topology"}), 400
 
     if request.json["deployment"]["platform"] == "OpenStack":
-        logs = openStackModule(data)
-        return jsonify({"message": "OpenStack deployment processed", "logs": logs})
+        task = deploy_openstack.delay(data, decoded)
+        return jsonify({"message": "OpenStack deployment processed"})
     else:
         # procedimiento linux
         return jsonify({"message": "LinuxCluster deployment processed"})
+
+
+@crudModule.route("/slices/delete/<slice_id>", methods=["POST"])
+def delete_slice(slice_id):
+
+    token = request.headers.get("Authorization")
+    validation = validate_token(token, "manager")
+    if not isinstance(validation, dict):
+        return validation
+
+    # buscar ID en la base de datos
+    collection = db_crud.deployed_slices if db_crud else None
+    if not collection:
+        return jsonify({"message": "Database connection error"}), 500
+
+    slice = collection.find_one({"_id": ObjectId(slice_id)})
+
+    if not slice:
+        return jsonify({"message": "Slice not found"}), 404
+
+    # eliminar slice usando task de celery
+    task = delete_openstack.delay(slice_id)
+    return jsonify({"message": "Slice deletion processed"})
 
 
 @crudModule.route("/slices/draft", methods=["GET"], defaults={"slice_id": None})
@@ -142,10 +171,14 @@ def list_draft_slices(slice_id):
                 slice["_id"] = str(slice["_id"])
             return jsonify({"message": "success", "slices": slices}), 200
         else:
-            slice = db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)}) if db_crud else {}
+            slice = (
+                db_crud.slices_draft.find_one({"_id": ObjectId(slice_id)})
+                if db_crud
+                else {}
+            )
             slice["_id"] = str(slice["_id"])
             return jsonify({"message": "success", "slice": slice}), 200
-            
+
     except Exception as e:
         return jsonify({"message": f"An error occurred: {e}"}), 500
 
@@ -170,9 +203,7 @@ def save_draft_slice():
     id = save_draft_to_db(data, decoded)
     url = generate_diag(decoded["_id"], str(id.inserted_id), data["structure"])
     if update_graph_to_db(str(id.inserted_id), url):
-        return jsonify(
-            {"message": "success", "sliceId": str(id.inserted_id)}
-        )
+        return jsonify({"message": "success", "sliceId": str(id.inserted_id)})
     else:
         return jsonify(
             {

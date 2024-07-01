@@ -20,7 +20,7 @@ KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
 DOMAIN_ID = "default"
 
 
-def main(admin_token, json_data):
+def main(admin_token, json_data, decoded):
     log_info(logger, "Obteniendo token para el proyecto")
     project_name = json_data["deployment"]["details"]["project_name"]
     # ===================================================== TOKEN FOR PROJECT =====================================================
@@ -31,7 +31,7 @@ def main(admin_token, json_data):
         log_info(logger, f"SUCCESSFUL AUTHENTICATION FOR PROJECT {project_name}")
         token_for_project = resp.headers["X-Subject-Token"]
         logs = network_creation(
-            token_for_project=token_for_project, json_data=json_data
+            token_for_project=token_for_project, json_data=json_data, decoded=decoded
         )
         log_info(logger, logs)
     else:
