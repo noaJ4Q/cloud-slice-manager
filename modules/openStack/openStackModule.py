@@ -2,7 +2,6 @@ import io
 import logging
 
 import requests
-from dotenv import load_dotenv
 
 from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import (
