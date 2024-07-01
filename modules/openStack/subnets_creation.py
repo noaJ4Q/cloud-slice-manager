@@ -63,17 +63,18 @@ def generate_diag(userId, topoId, json_data):
 
 def save_draft_to_db(data, decoded_token):
     data["manager"] = decoded_token["_id"]
+    data["deployment"]["details"]["status"] = "deployed"
     data["deployment"]["details"]["created"] = datetime.now().strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-    return db_crud.slices_draft.insert_one(data)
+    return db_crud.deployed_slices.insert_one(data)
 
 
 def update_graph_to_db(id, url):
     document = db_crud.slices_draft.find_one({"_id": ObjectId(id)})
     if document:
         document["deployment"]["details"]["graph_url"] = url
-        db_crud.slices_draft.update_one({"_id": ObjectId(id)}, {"$set": document})
+        db_crud.deployed_slices.update_one({"_id": ObjectId(id)}, {"$set": document})
         return True
     return False
 

@@ -72,7 +72,7 @@ def list_client_slices():
 @crudModule.route("/users/<role>")
 def list_users(role):
     token = request.headers.get("Authorization")
-    validation = validate_token(token, "manager")
+    validation = validate_token(token, "admin")
     if not isinstance(validation, dict):
         return validation
 
@@ -132,7 +132,7 @@ def create_slice():
         return jsonify({"message": "LinuxCluster deployment processed"})
 
 
-@crudModule.route("/slices/delete/<slice_id>", methods=["POST"])
+@crudModule.route("/slices/<slice_id>", methods=["DELETE"])
 def delete_slice(slice_id):
 
     token = request.headers.get("Authorization")
@@ -199,7 +199,7 @@ def save_draft_slice():
 
     if "_id" in data:
         id = data["_id"]
-        update_draft_to_db(data) 
+        update_draft_to_db(data)
         url = generate_diag(decoded["_id"], id, data["structure"])
         if update_graph_to_db(id, url):
             return jsonify({"message": "success", "sliceId": id})
@@ -232,6 +232,7 @@ def update_draft_to_db(data):
         db_crud.slices_draft.update_one({"_id": ObjectId(data["_id"])}, {"$set": data})
         return True
     return False
+
 
 @crudModule.route("/slices/diag", methods=["POST"])
 def gen_diag():

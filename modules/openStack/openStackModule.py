@@ -149,13 +149,14 @@ def main(json_data, decoded):
 def eliminate_topology(project_id):
     log_info(logger, "Inicio de la eliminación de OpenStack")
     token_for_project = get_token_for_admin_in_project(project_id)
+    log_info(logger, token_for_project)
 
     log_info(logger, "Buscando instancias")
     r1 = list_instances(NOVA_ENDPOINT, token_for_project, project_id)
     if r1.status_code == 200:
         instances = r1.json()["servers"]
     else:
-        log_error(logger, "Error buscando instancias")
+        log_error(logger, f"Error buscando instancias: {r1.status_code, r1.json()}")
         return None
     for ins in instances:
         ins_id = ins["id"]

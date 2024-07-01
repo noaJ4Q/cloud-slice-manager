@@ -21,13 +21,15 @@ def main(token_for_project, node_id, ports, json_data):
     log_info(logger, "Creando instancias")
 
     # INSTANCE DATA
-    instance_1_name = json_data["visjs"]["nodes"][node_id]["label"]
-    instance_1_flavor_id = json_data["metadata"]["nodes"][node_id]["flavor"]
-    instance_1_image_id = json_data["metadata"]["nodes"][node_id]["image"]
+    instance_1_name = json_data["structure"]["visjs"]["nodes"][node_id]["label"]
+    instance_1_flavor_id = json_data["structure"]["metadata"]["nodes"][node_id][
+        "flavor"
+    ]
+    instance_1_image_id = json_data["structure"]["metadata"]["nodes"][node_id]["image"]
 
     list_ports = []
 
-    for edge in json_data["metadata"]["edge_node_mapping"][node_id]:
+    for edge in json_data["structure"]["metadata"]["edge_node_mapping"][node_id]:
         add_port = {"port": ports[edge][0]}
         list_ports.append(add_port)
         del ports[edge][0]
@@ -48,6 +50,6 @@ def main(token_for_project, node_id, ports, json_data):
         instance_created = resp.json()
         print(json.dumps(instance_created))
     else:
-        log_error(logger, "FAILED INSTANCE CREATION")
+        log_error(logger, f"FAILED INSTANCE CREATION: {resp.status_code} {resp.json()}")
     logs_contents = log_buffer.getvalue()
     return logs_contents
