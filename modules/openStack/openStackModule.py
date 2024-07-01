@@ -112,7 +112,7 @@ def main(json_data):
             else:
                 log_error(logger, "FAILED ROLE ADDITION " + output)
         else:
-            log_error(logger, "FAILED PROJECT CREATION " + resp0.status_code)
+            log_error(logger, f"FAILED PROJECT CREATION: {resp0.status_code}")
     else:
         log_error(logger, "FAILED INITIALIZATION")
     log_contents = log_buffer.getvalue()
