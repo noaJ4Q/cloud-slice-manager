@@ -160,7 +160,7 @@ def main(token_for_project, network_id, json_data, decoded):
             )
             log_info(logger, logs)
         for node_id, node_info in json_data["structure"]["metadata"]["nodes"].items():
-            logs1 = instances_creation(
+            instance_id, logs1 = instances_creation(
                 token_for_project=token_for_project,
                 node_id=node_id,
                 ports=ports,
@@ -168,7 +168,7 @@ def main(token_for_project, network_id, json_data, decoded):
             )
 
             # find url and save in db
-            url = get_console_url_per_instance(instance_id=logs1["instance_id"])
+            url = get_console_url_per_instance(instance_id)
 
             # save in json_data
             json_data["structure"]["metadata"]["nodes"][node_id]["console_url"] = url

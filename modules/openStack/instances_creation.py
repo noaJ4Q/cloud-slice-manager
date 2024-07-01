@@ -49,13 +49,10 @@ def main(token_for_project, node_id, ports, json_data):
         log_info(logger, "INSTANCE CREATED SUCCESSFULLY")
         instance_created = resp.json()
         instance_id = instance_created.get("server").get("id")
+        message = f"instance_id: {instance_id}"
         # save url in json_data
-        log_info(
-            logger,
-            ["instance_id"],
-            instance_id,
-        )
+        log_info(logger, message)
     else:
         log_error(logger, f"FAILED INSTANCE CREATION: {resp.status_code} {resp.json()}")
     # logs_contents = log_buffer.getvalue()
-    return json.dumps(instance_created)
+    return instance_id, json.dumps(instance_created)
