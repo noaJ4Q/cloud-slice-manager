@@ -355,3 +355,34 @@ def get_logs():
 
     except Exception as e:
         return jsonify({"message": f"Error reading log file: {str(e)}"}), 500
+
+
+@crudModule.route("/createuser", methods=["POST"])
+def create_user():
+    data = request.get_json()
+    username = data.get("username")
+    password_hash = data.get("passwordHash")
+    role = data.get("role")
+
+    # Verificar si faltan datos obligatorios
+    if not (username and password_hash and role):
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
+
+    # Verificar la autorización (simulado con un token en la cabecera)
+    token = request.headers.get("Authorization")
+    if not token or not validate_token(token, "admin"):
+        return jsonify({"error": "Acceso no autorizado"}), 401
+
+    # Guardar el usuario en la base de datos
+    collection = db_crud["users"]  # Colección 'users' en la base de datos
+    user_data = {
+        "username": username,
+        "passwordHash": password_hash,
+        "role": role
+    }
+
+    try:
+        result = collection.insert_one(user_data)
+        return jsonify({"message": "Usuario creado exitosamente", "user_id": str(result.inserted_id)})
+    except Exception as e:
+        return jsonify({"error": f"No se pudo crear el usuario: {str(e)}"}), 500
