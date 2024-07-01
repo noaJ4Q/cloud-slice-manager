@@ -60,6 +60,37 @@ def auth_user():
         logger.warning(f"Nombre de usuario o contraseña inválidos para el usuario: {username}")
         return jsonify({"message": "Invalid username or password"}), 401
 
+
+def create_user():
+    data = request.get_json()
+    username = data.get("username")
+    password_hash = data.get("passwordHash")
+    role = data.get("role")
+
+    # Verificar si faltan datos obligatorios
+    if not (username and password_hash and role):
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
+
+    # Verificar la autorización (simulado con un token en la cabecera)
+    token = request.headers.get("Authorization")
+    if not token or not validate_token(token, "admin"):
+        return jsonify({"error": "Acceso no autorizado"}), 401
+
+    # Guardar el usuario en la base de datos
+    collection = db["users"]  # Colección 'users' en la base de datos
+    user_data = {
+        "username": username,
+        "passwordHash": password_hash,
+        "role": role
+    }
+
+    try:
+        result = collection.insert_one(user_data)
+        return jsonify({"message": "Usuario creado exitosamente", "user_id": str(result.inserted_id)})
+    except Exception as e:
+        return jsonify({"error": f"No se pudo crear el usuario: {str(e)}"}), 500
+
+
 def validate_user(username, password):
     try:
         user = db.users.find_one({"username": username, "password": password})
@@ -71,3 +102,27 @@ def validate_user(username, password):
     except Exception as e:
         logger.error(f"Error al buscar el usuario en la base de datos: {e}")
     return None
+
+
+def fecha_ya_vencio(fecha_definida):
+    fecha_definida_dt = datetime.strptime(fecha_definida, "%Y-%m-%d %H:%M:%S")
+    fecha_actual_dt = datetime.now()
+    return fecha_actual_dt > fecha_definida_dt
+
+
+def validate_token(token, role):
+    if not token:
+        return jsonify({"message": "Missing token"}), 401
+    try:
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+        if fecha_ya_vencio(decoded["expired"]):
+            return jsonify({"message": "Token expired"}), 411
+        if decoded["role"] != role:
+            return jsonify({"message": "Unauthorized access"}), 401
+        return decoded
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"message": f"An error occurred: {e}"}), 500
