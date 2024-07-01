@@ -8,11 +8,21 @@ from .admin_token_for_project import main as admin_token_for_project
 from .openstack_sdk import (
     assign_role_to_user,
     create_project,
+    delete_network,
+    delete_port,
+    delete_project,
+    delete_server,
+    delete_subnet,
     execute_bash_command,
+    list_instances,
+    list_networks,
+    list_ports,
+    list_subnets,
     log_error,
     log_info,
     password_authentication_with_scoped_authorization,
     password_authentication_with_scoped_authorization_va,
+    token_authentication_with_scoped_authorization,
 )
 
 
@@ -34,6 +44,8 @@ logger.setLevel(logging.INFO)
 
 # ENDPOINTS
 KEYSTONE_ENDPOINT = "http://127.0.0.1:5000/v3"
+NOVA_ENDPOINT = "http://127.0.0.1:8774/v2.1"
+NEUTRON_ENDPOINT = "http://127.0.0.1:9696"
 # CREDENTIALS
 ADMIN_USER_PASSWORD = "f47972ff2e17ca282c94b16ffab56767"
 ADMIN_USER_USERNAME = "admin"
@@ -58,6 +70,20 @@ def get_token_for_admin():
     )
     if r.status_code == 201:
         return r.headers["X-Subject-Token"]
+    else:
+        return None
+
+
+def get_token_for_admin_in_project(project_id):
+    admin_token = get_token_for_admin()
+    resp = token_authentication_with_scoped_authorization(
+        KEYSTONE_ENDPOINT, admin_token, DOMAIN_ID, project_id
+    )
+    # print('token project')
+    # print(resp.status_code)
+    if resp.status_code == 201:
+        token_for_project = resp.headers["X-Subject-Token"]
+        return token_for_project
     else:
         return None
 
@@ -117,5 +143,64 @@ def main(json_data, decoded):
             log_error(logger, f"FAILED PROJECT CREATION: {resp0.status_code}")
     else:
         log_error(logger, "FAILED INITIALIZATION")
+    log_contents = log_buffer.getvalue()
+    return log_contents
+
+
+def eliminate_topology(project_id):
+    log_info(logger, "Inicio de la eliminación de OpenStack")
+    token_for_project = get_token_for_admin_in_project(project_id)
+
+    log_info(logger, "Buscando instancias")
+    r1 = list_instances(NOVA_ENDPOINT, token_for_project, project_id)
+    if r1.status_code == 200:
+        instances = r1.json()["servers"]
+    else:
+        log_error(logger, "Error buscando instancias")
+        return None
+    for ins in instances:
+        ins_id = ins["id"]
+
+        r11 = delete_server(NOVA_ENDPOINT, token_for_project, ins_id)
+        if r11.status_code == 204:
+            log_info(logger, f"INSTANCIA BORRADA CORRECTAMENTE: {ins_id}")
+        # print(ins_id)
+
+    r2 = list_ports(NEUTRON_ENDPOINT, token_for_project, project_id)
+    if r2.status_code != 200:
+        log_error(logger, "Error buscando puertos")
+    ports = r2.json()["ports"]
+    for port in ports:
+        port_id = port["id"]
+        r21 = delete_port(NEUTRON_ENDPOINT, token_for_project, port_id)
+        if r21.status_code == 204:
+            log_info(logger, f"PUEERTO BORRADO CORRECTAMENTE: {port_id}")
+        # print(port_id)
+
+    r3 = list_subnets(NEUTRON_ENDPOINT, token_for_project, project_id)
+    if r3.status_code != 200:
+        return None
+    subnets = r3.json()["subnets"]
+    for sn in subnets:
+        sn_id = sn["id"]
+        r31 = delete_subnet(NEUTRON_ENDPOINT, token_for_project, sn_id)
+        if r31.status_code == 204:
+            log_info(logger, f"SUBRED BORRADA CORRECTAMENTE: {sn_id}")
+
+    r4 = list_networks(NEUTRON_ENDPOINT, token_for_project, project_id)
+    if r4.status_code != 200:
+        return None
+    nets = r4.json()["networks"]
+    for net in nets:
+        net_id = net["id"]
+        r41 = delete_network(NEUTRON_ENDPOINT, token_for_project, net_id)
+        if r41.status_code == 204:
+            log_info(logger, f"RED BORRADA CORRECTAMENTE: {net_id}")
+
+    r5 = delete_project(KEYSTONE_ENDPOINT, token_for_project, project_id)
+    if r5.status_code == 204:
+        log_info(logger, "TOPOLOGIA BORRADA CORRECTAMENTE")
+    else:
+        log_error(logger, "Error borrando proyecto")
     log_contents = log_buffer.getvalue()
     return log_contents

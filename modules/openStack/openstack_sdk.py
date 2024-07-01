@@ -254,3 +254,112 @@ def create_instance(auth_endpoint, token, name, flavorRef, imageRef, network_lis
     r = requests.post(url=url, headers=headers, data=json.dumps(data))
     # status_code success = 202
     return r
+
+
+def list_instances(nova_endpoint, token, project_id=None):
+    # url = nova_endpoint + '/servers'
+    url = nova_endpoint + "/servers/detail"
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    params = {"all_tenants": True}
+    if project_id:
+        params = {"all_tenants": True, "project_id": project_id}
+
+    r = requests.get(url=url, headers=headers, params=params)
+    return r
+
+
+def delete_server(auth_endpoint, token, server_id):
+    url = auth_endpoint + "/servers/" + server_id
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.delete(url=url, headers=headers)
+    # status_code success = 204
+    return r
+
+
+def list_ports(auth_endpoint, token, project_id=None):
+    url = auth_endpoint + "/ports"
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    params = {}
+    if project_id:
+        params["project_id"] = project_id
+
+    try:
+        r = requests.get(url=url, headers=headers, params=params)
+        r.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        print("Error en la solicitud: ", e)
+        r = None
+    return r
+
+
+def delete_port(auth_endpoint, token, port_id):
+    url = auth_endpoint + "/ports/" + port_id
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.delete(url=url, headers=headers)
+    # status_code success = 204
+    return r
+
+
+def delete_subnet(auth_endpoint, token, subnet_id):
+    url = auth_endpoint + "/subnets/" + subnet_id
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.delete(url=url, headers=headers)
+    # status_code success = 204
+    return r
+
+
+def list_subnets(auth_endpoint, token, project_id=None):
+    url = auth_endpoint + "/subnets"
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    params = {}
+    if project_id:
+        params["project_id"] = project_id
+
+    try:
+        r = requests.get(url=url, headers=headers, params=params)
+        r.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        print("Error en la solicitud: ", e)
+        r = None
+    return r
+
+
+def list_networks(auth_endpoint, token, project_id=None):
+    url = auth_endpoint + "/networks"
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    params = {}
+    if project_id:
+        params["project_id"] = project_id
+
+    try:
+        r = requests.get(url=url, headers=headers, params=params)
+        r.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        print("Error en la solicitud: ", e)
+        r = None
+    return r
+
+
+def delete_network(auth_endpoint, token, network_id):
+    url = auth_endpoint + "/networks/" + network_id
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.delete(url=url, headers=headers)
+    # status_code success = 204
+    return r
+
+
+def delete_project(auth_endpoint, token, project_id):
+    url = auth_endpoint + "/projects/" + project_id
+    headers = {"Content-type": "application/json", "X-Auth-Token": token}
+
+    r = requests.delete(url=url, headers=headers)
+    # status_code success = 204
+    return r
