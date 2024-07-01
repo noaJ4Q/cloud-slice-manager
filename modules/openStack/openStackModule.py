@@ -68,11 +68,8 @@ def main(json_data):
     success, output = execute_bash_command(". ~/env-scripts/admin-openrc")
     if success:
         # ===================================================== PROJECT CREATION =====================================================
-        command = (
-            "openstack project create "
-            + json_data["deployment"]["details"]["project_name"]
-        )
         admin_token = get_token_for_admin()
+        log_info(logger, "ADMIN TOKEN: " + admin_token)
 
         resp0 = create_project(
             KEYSTONE_ENDPOINT,
@@ -115,7 +112,7 @@ def main(json_data):
             else:
                 log_error(logger, "FAILED ROLE ADDITION " + output)
         else:
-            log_error(logger, "FAILED PROJECT CREATION " + output)
+            log_error(logger, "FAILED PROJECT CREATION " + resp0.status_code)
     else:
         log_error(logger, "FAILED INITIALIZATION")
     log_contents = log_buffer.getvalue()
