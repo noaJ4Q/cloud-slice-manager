@@ -64,7 +64,7 @@ def auth_user():
 def create_user():
     data = request.get_json()
     username = data.get("username")
-    password_hash = data.get("passwordHash")
+    password_hash = data.get("password")
     role = data.get("role")
 
     # Verificar si faltan datos obligatorios
@@ -80,9 +80,11 @@ def create_user():
     collection = db["users"]  # Colección 'users' en la base de datos
     user_data = {
         "username": username,
-        "passwordHash": password_hash,
+        "password": password_hash,
         "role": role
     }
+
+    print(user_data)
 
     try:
         result = collection.insert_one(user_data)
