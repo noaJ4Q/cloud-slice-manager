@@ -49,7 +49,7 @@ db = db_connection_monitoreo()
 @crudModule.route("/slices/client", methods=["GET"])
 def list_client_slices():
     token = request.headers.get("Authorization")
-    validation = validate_token(token, "client")
+    validation = validate_token(token, "regular")
     if not isinstance(validation, dict):
         return validation
 
